@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import './App.css';
 import ApodCard from "./ApodCard"; 
+import DatePicker from "./DatePicker"; 
 
 
 function App() {
@@ -40,7 +41,7 @@ function App() {
   return (
     
     <div className="App">
-      
+      <DatePicker/>
       <ApodCard id={date} title={title} desc={desc} src={hdurl ? hdurl : (thumbnail_url ? thumbnail_url : url)} />
     
     </div>

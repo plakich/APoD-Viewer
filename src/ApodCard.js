@@ -1,5 +1,3 @@
-import React from 'react';
-
 const ApodCard = ({id, title, desc, src}) => 
 {
     return (
@@ -7,7 +5,7 @@ const ApodCard = ({id, title, desc, src}) =>
         <div className="card">
             <h2 className="card__title">{title}</h2>
             <h3 className="card__date">{id}</h3>
-            <img className="card__img" src={src}/>
+            <img className="card__img" src={src} alt="astronomy picture of the day" />
             <p className="card__desc">{desc}</p>
         </div>
         
