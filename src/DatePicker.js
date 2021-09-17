@@ -24,6 +24,7 @@ const DatePicker = () => //will use prop fn from above to handle date selecting
         
         const name = e.target.name;
         let value = e.target.value; 
+        let isValidDate = true; 
         
         //read length
         //format for slashes / if needed (no slashes? insert them, slashes? leave alone)
@@ -32,13 +33,14 @@ const DatePicker = () => //will use prop fn from above to handle date selecting
         //use Map to see if char allowed at index, if so place there
         //if char not allowed, see if you can replace with 0 (eg MM as 13 will be 10 to be valid so replace 3 with 0)
         
-        //value = formatSlashes(val)
+        value = formatSlashes(value);
         
-        //
+        isValidDate = validateDate(value); 
         
-        //formatInput(); 
-        
-        setDateRange({...dateRange, [name]: value});
+        if (isValidDate)
+        {
+            setDateRange({...dateRange, [name]: value});
+        }
         
         
     };
@@ -62,9 +64,9 @@ const DatePicker = () => //will use prop fn from above to handle date selecting
 const setTodaysDate = () =>
 {
     let todaysDate = new Date().toLocaleDateString("en-US").split("/").map(el => el.length === 1 ? el.padStart(2,0) : el);
-    [todaysDate[1], todaysDate[2], todaysDate[0]] = [todaysDate[0], todaysDate[1], todaysDate[2]];
+    [todaysDate[1], todaysDate[2], todaysDate[0]] = [todaysDate[0], todaysDate[1], todaysDate[2]]; //rearrange in YYYY,MM,DD format
     
-    return todaysDate.join("/");
+    return todaysDate.join("/"); // create string with parts separated by forward slashes YYYY/MM/DD
 };
 
 //format slashes for dates (e.g., 2001/09/09)
@@ -108,30 +110,55 @@ const formatSlashes = (val) =>
     return formattedVal; 
 };
 
-const formatInput = (val) =>
+const validateDate = (val) =>
 {
     
     const charsAllowed = new Map(
         [   [0, "1 2"],
+            [1, new Map([
+                            [1, "9"]
+                        ])],
+            [2, new Map([
+                            [9, "9"]
+                        ])],
+            [3, new Map([
+                            [9, "5"]
+                        ])],
             [4, "/"],
             [5, "0 1"],
             [7, "/"],
             [8, "0 1 2 3"]
     ]);
     
+    let formattedInput = val.split("");
     
-    const currentChar = val.charAt(val.length - 1); 
-    const isInt = Number.isInteger(val);
-    
-    if(!isInt)
+    formattedInput = formattedInput.map((dateChar, i) =>
     {
-        return val.slice(0, val.length -1); 
-    }
+        let isValidChar = true; 
+        isValidChar = charsAllowed.get(i) ? 
+                                              ( typeof charsAllowed.get(i) === "string" 
+                                              ? charsAllowed.get(i).indexOf(dateChar) !== -1 : charsAllowed.get(i).get( Number( formattedInput[i-1] ) ) ) 
+                                          : Number.isInteger(Number(dateChar)); 
+        return isValidChar ? dateChar : "E"; //E for error 
+    });
     
-    if(val.length > 0 && val.length < 2)
-    {
+    //classList.add(error) for each date part that has error
+   
+    return formattedInput.indexOf("E") === -1; 
+    
+    
+    // const currentChar = val.charAt(val.length - 1); 
+    // const isInt = Number.isInteger(val);
+    
+    // if(!isInt)
+    // {
+    //     return val.slice(0, val.length -1); 
+    // }
+    
+    // if(val.length > 0 && val.length < 2)
+    // {
         
-    }
+    // }
     
 }
 
