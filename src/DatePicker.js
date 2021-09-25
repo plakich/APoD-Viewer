@@ -17,16 +17,12 @@ const DatePicker = () => //will use prop fn from above to handle date selecting
         
     };
     
+    //below fn formats string for acceptable YYYY/MM/DD format
     const handleChange = (e) =>
     {
         const maxDateLength = 10; 
-        //1. read string length
-        //2. format string based on length
-        //3. insert / into correct places
-        //4. repeat 1-3 until correctly formatted
-        //5. display string to user as return value
-        
         const name = e.target.name;
+        
         //replace all whitespace because user could have entered YYYY / MM / DD which is 
         //more than 10 chars (maxDateLength) but that should still be valid. So should
         //YYYY  MM DD (user entered one too many spaces). 
@@ -34,15 +30,13 @@ const DatePicker = () => //will use prop fn from above to handle date selecting
         //given a date with a hyphen, it uses user's local time to set the exact date 
         //which can result in getting a date one day behind or ahead of the day  
         //wanted (relative to GMT). 
-        let value = e.target.value.replace(/\s/g, '').replace(/-/g, "/").slice(0, maxDateLength);  
+        let value = e.target.value.replace(/\s/g, '').replace(/-/g, "/");  
         let isDeleting = keyPressed === "Backspace" || keyPressed === "Delete";  
        
-        
-        if (isDeleting) //deleting chars (problem with if being here and not at top: 1999/09/09 delete zero and formatter will still make it 1999/09/09)
-        { //logic problem deleting dates like 1999/09/09 delete 2nd zero should give 1999/09 but formatter code above will make 1999/09/9 into 1999/09/09 doing nothing
-        //using this code up at top will make it so unless it's the first date entered on a blank input, 1999/5/5 will not give 1999/05/05 but just 1999 since it will think deleting month
-            isDeleting = true; 
-            setKeyPressed("Unidentified");
+        //string is formatted differently first if user is deleting rather than entering chars
+        if (isDeleting) 
+        { 
+            //setKeyPressed("Unidentified");
             const oldValue = dateRange[name];
             
             const YEAR = 0;
@@ -50,23 +44,26 @@ const DatePicker = () => //will use prop fn from above to handle date selecting
             const DAY = 2; 
             const slashIndex1 = 4;
             const slashIndex2 = 7; 
+            const secondDayChar = 9; 
+            const secondMonthChar = 6; 
             
-            const oldDateParts = oldValue.split("/"); 
+            const oldDateParts = oldValue.split("/"); // for 'YYYY/MM/DD' date we get -> [YYYY, MM, DD] 
             const newDateParts = value.split("/");
             
             //value = formatSlashes(value); 
             
-           
+            //below, we find which date part strings are shorter than the value last entered for that part (e.g., year/month/day)
+            //and reformat the string based on what char of each date part was deleted
             
             if (typeof newDateParts[DAY] !== "undefined" && newDateParts[DAY].length < oldDateParts[DAY].length)
             {
-                // e.g., old: 1999/09/01 new: 1999/01/0 but for old: 1999/09/01 new: 1999/09/1 (deleted zero) will be just 1999/09 (day removed altogether)
-                value = e.target.selectionEnd === 9 ? newDateParts.join("") : newDateParts[YEAR] + newDateParts[MONTH];
+                // e.g., old: 1999/09/01 delete 1 get new: 1999/01/0 but for old: 1999/09/01 new: 1999/09/1 (deleted zero) will be just 1999/09 (day removed altogether)
+                value = e.target.selectionEnd === secondDayChar ? newDateParts.join("") : newDateParts[YEAR] + newDateParts[MONTH];
             }
             
             if (typeof newDateParts[MONTH] !== "undefined" && newDateParts[MONTH].length < oldDateParts[MONTH].length) 
             {
-                value = e.target.selectionEnd === 6 ? newDateParts[YEAR] + newDateParts[MONTH] : newDateParts[YEAR];
+                value = e.target.selectionEnd === secondMonthChar ? newDateParts[YEAR] + newDateParts[MONTH] : newDateParts[YEAR];
             }
             
             if (typeof newDateParts[YEAR] !== "undefined" && newDateParts[YEAR].length < oldDateParts[YEAR].length)
@@ -74,43 +71,39 @@ const DatePicker = () => //will use prop fn from above to handle date selecting
                 value = newDateParts[YEAR]; 
             }
             
-            if (e.target.selectionEnd === slashIndex1 || e.target.selectionEnd === slashIndex2) //a slash was deleted somewhere (e.g., 1999/09/09 -> 199909/09 becomes 1999)
+            if (e.target.selectionEnd === slashIndex1 || e.target.selectionEnd === slashIndex2) //a slash was deleted somewhere (e.g., 1999/07/09 -> 199907/09 becomes 1999)
             {
                 value = oldValue.slice(0, e.target.selectionEnd); 
             }
             
-            
         }
         
-        
-    
-        let isValidDate = true; //need date in YYYY/MM/DD format. 
-        let errorArray = []; 
-        
-        //read length
-        //format for slashes / if needed (no slashes? insert them, slashes? leave alone)
-        //split at /
-        //loop over each passing index to some formatter (so we know if Y or M or D)
-        //use Map to see if char allowed at index, if so place there
-        //if char not allowed, see if you can replace with 0 (eg MM as 13 will be 10 to be valid so replace 3 with 0)
+        let isValidDateChars = true; //need date in YYYY/MM/DD format and only certain chars allowed at each index
+        let errorArray = []; //so we know which char of YYYY/MM/DD string isn't allowed
         
         value = formatSlashes(value);
         
-        ({errorArray} = validateDateChars(value)); 
+        value = value.slice(0, maxDateLength); //we don't care about any dates over 10 chars
+        
+        //insert 'E's into positions where chars aren't allowed in Date (e.g., 19K$ becomes 19EE)
+        //so we know which pos error chars are at
+        ({isValidDateChars, errorArray} = validateDateChars(value)); 
        
         
-        //try one more time to 
-        //reformat date for month day errors, if any.
-       
-        value = shiftMonthDayChars(value, errorArray);
-       
-        value = dropErrorChars(value); 
-       
-        value = formatSlashes(value); //reformat since we dropped chars (e.g., 1999/00/00 becomes 1999// after dropped chars)
-        
-        ({isValidDate} = validateDateChars(value));
-        
-        if (isDeleting)
+        if (!isValidDateChars) //after this block, date chars will be valid, or string is empty
+        {
+            //try one more time to 
+            //reformat date for month day errors, if any.
+            value = shiftMonthDayChars(value, errorArray); //e.g., user entered 1999/9/9 which turns into 1999/09/09
+           
+            value = dropErrorChars(value);//if date string still has error chars, just drop them from string
+           
+        }
+     
+        //If user is deleting last char of date before a slash, just delete the slash for the user too instead
+        //of making them delete it manually. For example, for '1999/1' delete the '1' and we should automatically just 
+        //get '1999' not '1999/' which is what we would get if entering chars (slash is insertered automatically).
+        if (isDeleting) //undo formatted slashes if deleting, if needed
         {
             while (value.lastIndexOf("/") === value.length - 1 && value.length > 0) 
             {
@@ -119,27 +112,22 @@ const DatePicker = () => //will use prop fn from above to handle date selecting
         }
       
         
-        if (isValidDate)
+        if (value.length === maxDateLength) //a complete date was entered 
         {
-            if (value.length === 10) //a complete date was entered 
-            {
-                
-                //below, getFormattedDate should return the same value as value
-                //(e.g., 1999/09/09 should return 1999/09/09). We try to
-                //format the date again because of edge cases where the
-                //date still wouldn't be correct (e.g., a user who 
-                //accidentally entered 1999/09/31 ignoring that they're aren't
-                //31 days in September). In that case, the date returned will 
-                //be the next valid date (e.g., 1999/10/01); 
-                value = getFormattedDate(value); 
-            }
-           
-            setDateRange({...dateRange, [name]: value});
+            
+            //below, getFormattedDate should return the same value as value
+            //(e.g., 1999/09/09 should return 1999/09/09). We try to
+            //format the date again because of edge cases where the
+            //date still wouldn't be correct (e.g., a user who 
+            //accidentally entered 1999/09/31 ignoring that they're aren't
+            //31 days in September). In that case, the date returned will 
+            //be the next valid date (e.g., 1999/10/01); 
+            value = getFormattedDate(value); 
         }
+       
+        setDateRange({...dateRange, [name]: value});
+        
     
-        
-        
-        
     };
     
     
@@ -228,11 +216,11 @@ const formatSlashes = (val) =>
 //in September)
 const validateDateChars = (val) =>
 {
-    
     const charsAllowed = new Map(
         [   [0, "1 2"],
             [1, new Map([
-                            [1, "9"] //if 1 was entered as first char of date, only a 9 is valid as 2nd
+                            [1, "9"], //if 1 was entered as first char of date, only a 9 is valid as 2nd
+                            [2, "0"]
                         ])],
             [2, new Map([
                             [9, "9"]
@@ -254,9 +242,7 @@ const validateDateChars = (val) =>
                         ])]
     ]);
     
-    let formattedInput = val.split("");
-    
-    formattedInput = formattedInput.map((dateChar, i) =>
+    const errorArray = val.split("").map((dateChar, i, arrValue) =>
     {
         let isValidChar = true; 
         
@@ -264,8 +250,8 @@ const validateDateChars = (val) =>
         //in which case as long as said char is an integer it's valid.
         isValidChar = charsAllowed.get(i) ? ( typeof charsAllowed.get(i) === "string" 
                                               ? charsAllowed.get(i).indexOf(dateChar) !== -1
-                                              : ( charsAllowed.get(i).get( Number( formattedInput[i-1] ) ) 
-                                                  ? charsAllowed.get(i).get( Number( formattedInput[i-1] ) ).indexOf(dateChar) !== -1 
+                                              : ( charsAllowed.get(i).get( Number( arrValue[i-1] ) ) 
+                                                  ? charsAllowed.get(i).get( Number( arrValue[i-1] ) ).indexOf(dateChar) !== -1 
                                                   : Number.isInteger(Number(dateChar)) ) )
                                           : Number.isInteger(Number(dateChar)); 
        
@@ -275,7 +261,7 @@ const validateDateChars = (val) =>
     
     //classList.add(error) for each date part that has error
    
-    return {isValidDate: formattedInput.indexOf("E") === -1, errorArray: formattedInput}; 
+    return {isValidDateChars: errorArray.indexOf("E") === -1, errorArray: errorArray}; 
     
 };
 
@@ -327,10 +313,12 @@ const shiftMonthDayChars = (value, errorArray) =>
 const dropErrorChars = (value) => 
 {
     let {errorArray} = validateDateChars(value);
-    value = value.split(""); 
     
     while(errorArray.indexOf("E") !== -1)
     {
+        //so we can access and modify string pos i without changing length of string
+        value = value.split(""); 
+        
         errorArray.forEach((char, i) =>
         {
            if(char === "E")
@@ -341,12 +329,9 @@ const dropErrorChars = (value) =>
         value = value.join("");
         value = formatSlashes(value);
         ({errorArray} = validateDateChars(value));
-        value = value.split(""); 
     }
     
-    value = value.join("").split("/"); //so we rip out empty /MM/DD values (e.g., 1999// becomes 1999)
-    
-    return value.join(""); 
+    return value; 
 };
 
 export default DatePicker; 
