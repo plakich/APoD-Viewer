@@ -1,23 +1,111 @@
 import {useState, useEffect} from "react"
 
-const DatePicker = () => //will use prop fn from above to handle date selecting
+const DatePicker = (props) => 
 {
-    // const [fromDate, setFromDate] = useState(""); 
-    // const [toDate, setToDate] = useState( setDate() ); str.replace(/\//g, '-');
-    const [dateRange, setDateRange] = useState({ fromDate: "", toDate: getFormattedDate() });
+    const {setDateRange} = props; 
+    const [dateInput, setDateInput] = useState({ fromDate: "", toDate: getFormattedDate() });
     const [keyPressed, setKeyPressed] = useState("Unidentified");
     
     const handleSubmit = (e) =>
     {
         e.preventDefault(); 
-        handleChange(e); // reformat chars if necessary
         
-        //const isDateRangeChronological = compareDatesChronology(dateRange); 
-        //use props fn to pass formatted date string back to main componenet for rerender.
+        const formattedFrom = dateInput["fromDate"].replace(/\//g, "-");  // need hyphen because api expects - instead of slash /
+        const formattedTo = dateInput["toDate"].replace(/\//g, "-");  
+        
+        const earliestFromDate = "1995/06/16"; //day of first Astronomy Picture of the Day
+        
+        const latestToDate = getFormattedDate(); //today's date
+        
+        const isExistsFromDate = dateInput["fromDate"].length > 0; 
+        
+        const isExistsToDate = dateInput["toDate"].length > 0;
+        
+        const isValidFromDate =  new Date(dateInput["fromDate"]).toString() !== "Invalid Date";
+        
+        const isValidToDate =  new Date(dateInput["toDate"]).toString() !== "Invalid Date";
+        
+        
+        const isDateRangeChrononological = new Date(dateInput["fromDate"]) <= new Date(dateInput["toDate"]);
+        
+        const isFromDateInRange = new Date(dateInput["fromDate"]) >= new Date(earliestFromDate); 
+                
+        const isToDateInRange = new Date(dateInput["toDate"]) <= new Date(latestToDate);
+        
+        
+        if ( isDateRangeChrononological && isToDateInRange && isFromDateInRange )
+        {
+            //send off dates to server to make api call
+           
+            setDateRange({fromDate: formattedFrom, toDate: formattedTo});
+        }
+        else if ( !isExistsFromDate && isValidToDate && isToDateInRange )  //as long as one date is valid and in range, send to server to get pic for that day
+        {
+            //send toDate to server to make api call
+            setDateRange({fromDate: formattedTo, toDate: formattedTo});
+
+        }
+        else if ( !isExistsToDate && isValidFromDate && isFromDateInRange ) //as long as one date is valid and in range, send to server to get pic for that day
+        {
+            //send fromDate to server to make api call
+            setDateRange({fromDate: formattedFrom, toDate: formattedFrom});
+           
+        }
+        else if ( (isValidFromDate && isFromDateInRange) && (isValidToDate && isToDateInRange) && !isDateRangeChrononological )
+        {
+            //chronology error msg
+           
+        }
+        else if ( ( isValidFromDate && !isValidToDate ) || ( isValidToDate && !isValidFromDate ) )
+        {
+            
+            if ( !isValidFromDate )
+            {
+                //from date error msg
+                
+            }
+            else if ( !isFromDateInRange ) 
+            {
+                //from date range error
+                
+            }
+            
+            if ( !isValidToDate )
+            {
+                //to Date error msg
+                
+            }
+            else if ( !isToDateInRange )
+            {
+                //toDate range error msg
+               
+            }
+            
+        }
+        else if ( !isValidFromDate && !isValidToDate )
+        {
+            //error with both dates. 
+            
+        }
+        else if ( ( isValidFromDate && !isFromDateInRange ) || ( isValidToDate && !isToDateInRange ) ) //both valid but contain dateInput errors
+        {
+            if ( !isFromDateInRange )
+            {
+                //fromDate range error
+               
+            }
+            
+            if ( !isToDateInRange )
+            {
+                //toDate range error
+               
+            }
+        }
         
     };
     
     //below fn formats string for acceptable YYYY/MM/DD format
+    //and sets dateInput if chars valid
     const handleChange = (e) =>
     {
         const maxDateLength = 10; 
@@ -37,7 +125,7 @@ const DatePicker = () => //will use prop fn from above to handle date selecting
         if (isDeleting) 
         { 
             //setKeyPressed("Unidentified");
-            const oldValue = dateRange[name];
+            const oldValue = dateInput[name];
             
             const YEAR = 0;
             const MONTH = 1;
@@ -89,7 +177,6 @@ const DatePicker = () => //will use prop fn from above to handle date selecting
         //so we know which pos error chars are at
         ({isValidDateChars, errorArray} = validateDateChars(value)); 
        
-        
         if (!isValidDateChars) //after this block, date chars will be valid, or string is empty
         {
             //try one more time to 
@@ -125,7 +212,7 @@ const DatePicker = () => //will use prop fn from above to handle date selecting
             value = getFormattedDate(value); 
         }
        
-        setDateRange({...dateRange, [name]: value});
+        setDateInput({...dateInput, [name]: value});
         
     
     };
@@ -133,19 +220,26 @@ const DatePicker = () => //will use prop fn from above to handle date selecting
     
     return (
     
-        <div className="container" onSubmit={handleSubmit}>
-            <form>
+        <div className="form-container">
+            <form onSubmit={handleSubmit}>
                 <label htmlFor="fromDate">From Date</label>
                 <input type="text"
                     id="fromDate" 
                     name="fromDate" 
                     className="date-picker" 
                     placeholder="YYYY/MM/DD" 
-                    value={dateRange.fromDate} 
+                    value={dateInput.fromDate} 
                     onChange={handleChange}
                     onKeyDown={(e) => setKeyPressed(e.key)}/>
                 <label htmlFor="toDate">To Date</label>
-                <input type="text" id="toDate" name="toDate" className="date-picker" placeholder="YYYY/MM/DD" value={dateRange.toDate} onChange={handleChange} />
+                <input type="text" 
+                    id="toDate" 
+                    name="toDate" 
+                    className="date-picker" 
+                    placeholder="YYYY/MM/DD" 
+                    value={dateInput.toDate} 
+                    onChange={handleChange} 
+                    onKeyDown={(e) => setKeyPressed(e.key)}/>
                 <button type="submit">Submit</button>
             </form>
         </div>

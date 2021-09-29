@@ -6,43 +6,51 @@ import DatePicker from "./DatePicker";
 
 function App() {
   
-  //use later for formatting dates that user chooses
-  let todaysDate = new Date().toLocaleDateString("en-US").split("/").map(el => el.length === 1 ? el.padStart(2,0) : el);
-
-  [todaysDate[1], todaysDate[2], todaysDate[0]] = [todaysDate[0], todaysDate[1], todaysDate[2]];
+  let todaysDate = new Date(); // get today's date
+    
+  let datePart = todaysDate.toLocaleDateString("en-US").split("/").map(el => el.length === 1 ? el.padStart(2,0) : el);
+  [datePart[1], datePart[2], datePart[0]] = [datePart[0], datePart[1], datePart[2]]; //rearrange in YYYY,MM,DD format
+    
+  todaysDate = datePart.join("-"); // create string with parts separated by forward slashes YYYY/MM/DD
   
-  todaysDate = todaysDate.join('-'); //now in proper YYYY-MM-DD format for api
-  
-  const [apod, setApod] = useState({});
+  const [apod, setApod] = useState([]);
+  const [dateRange, setDateRange] = useState({ fromDate: todaysDate, toDate: todaysDate });
   
   const getApod = async () =>
   {
     try
     {
-      const res = await fetch(`https://api.nasa.gov/planetary/apod?api_key=${process.env.REACT_APP_APOD_API_KEY}&thumbs=true`);
+      const res = await fetch(
+        `https://api.nasa.gov/planetary/apod?api_key=${process.env.REACT_APP_APOD_API_KEY}&thumbs=true&start_date=${dateRange["fromDate"]}&end_date=${dateRange["toDate"]}`
+        );
       const apod = await res.json(); 
 
-      setApod(apod); 
+      setApod(apod.reverse()); 
     }
     catch(e)
     {
       console.log(e); 
     }
     
-  }
+  };
   
   useEffect(() =>
   {
     getApod();
-  }, []);
-  
-  const {date, explanation: desc, title, url, hdurl, thumbnail_url} = {...apod}; 
+  }, [dateRange]);
 
   return (
     
     <div className="App">
-      <DatePicker/>
-      <ApodCard id={date} title={title} desc={desc} src={hdurl ? hdurl : (thumbnail_url ? thumbnail_url : url)} />
+      <DatePicker setDateRange={setDateRange}/>
+      <div class="container">
+        {apod.map( apod =>
+          {
+            const {date, explanation: desc, title, url, hdurl, thumbnail_url} = apod; 
+            return <ApodCard key={date} id={date} title={title} desc={desc} src={hdurl ? hdurl : (thumbnail_url ? thumbnail_url : url)} />;
+          })
+        }
+      </div>
     
     </div>
   );
