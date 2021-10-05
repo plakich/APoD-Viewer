@@ -24,26 +24,6 @@ code {
   
 }
 
-header {
-  display: flex; 
-  flex-direction: row;
-  justify-content: flex-start;
-  align-items: center;
-  padding-top: 1em;
-}
-
-header > .logo {
-  padding-left: 1em;
-}
-
-.logo-text {
-  color: white;
-  font: Fira Sans;
-  font: 3vh "Fira Sans";
-  margin-left: -0.6em;
-}
-
-
 .hero {
   background: #000;
   background-image: linear-gradient(#00000099, #00000099), url("");
@@ -58,11 +38,33 @@ header > .logo {
   align-items: flex-start;
 }
 
-.hero__title__text {
-  text-align: left;
+header {
+  display: flex; 
+  flex-direction: row;
+  justify-content: flex-start;
+  align-items: center;
+  padding-top: 0.5em;
+}
+
+header > .logo {
+  padding-left: 0.5em;
+  transform: scale(0.6);
+  
+}
+
+.logo-text {
   color: white;
-  font: 13vh "Roboto", sans-serif;
-  padding-left: 0.25em;
+  font: Fira Sans;
+  font: 1rem "Fira Sans";
+  margin-left: -1.25em;
+  padding-top: 0.5em;
+}
+
+.hero__title__text {
+  text-align: center;
+  color: white;
+  font: 2.5rem "Roboto", sans-serif;
+  padding: 0 0.5em;
   letter-spacing: 2px;
   
 }
@@ -70,24 +72,24 @@ header > .logo {
 .form-container {
   width: 100%;
 }
-
+  
+  
 form {
   display: flex;
-  align-items: flex-end;
-  padding-left: 2em;
+  flex-direction: column;
+  align-items: center;
   padding-bottom: 2em;
 }
 
 form > button {
-  width: 9em;
-  height: 2.9em;
-  margin-left: 2em;
+  width: 7em;
+  height: 2.25em;
   border-radius: 5px;
   background-color: rgba(255,255,255,1);
   transition: all 0.6s ease-out;
 }
 
-form > button:hover, form > button:focus {
+ form > button:hover, form > button:focus {
   color: white;
   background-color: rgba(255,255,255,0.3);
   outline: 3px solid white;
@@ -97,14 +99,14 @@ form > button:hover, form > button:focus {
 .input-container {
   display: flex;
   flex-direction: column; 
-  align-items: flex-start;
+  align-items: center;
+  margin-bottom: 1.25em;
 }
 
 .input-container > label {
-  padding-left: 1.5em; 
-  padding-bottom: 0.25em;
+  padding-bottom: 0.5em;
   color: white;
-  font: 2vh "Fira Sans", sans-serif;
+  font: 1rem "Fira Sans", sans-serif;
   transition: transform 0.6s ease-in-out; 
   order: -1;
 }
@@ -121,17 +123,161 @@ form > button:hover, form > button:focus {
 }
 
 label > .label-small {
-  font-size: 1.25vh;
+  font-size: 0.75rem;
 }
-
+  
 .date-picker {
-  width: 20em;
-  height: 3em;
+  width: 14em;
+  height: 2.5em;
   border-radius: 5px;
-  margin-left: 2em;
   background-color: rgba(255,255,255,0.8);
   transition: all 0.6s ease-out;
   font-weight: bold;
+}
+
+@media (max-height: 30rem)
+{
+  .hero {
+    height: auto;
+  }
+  
+  form {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+  
+  form > button {
+    margin-left: 1.25em;
+    margin-top: 0.5em;
+  }
+  
+   .input-container {
+    margin-left: 1.25em;
+  }
+  
+}
+
+@media (min-width: 48.75rem)
+{
+  form {
+    display: flex;
+    flex-direction: row;
+    align-items: flex-end;
+    padding-left: 2em;
+    padding-bottom: 2em;
+  }
+  
+    form > button {
+    width: 9em;
+    height: 2.9em;
+    margin-left: 2em;
+  }
+  
+  .input-container {
+    display: flex;
+    flex-direction: column; 
+    align-items: flex-start;
+    margin-bottom: 0;
+  }
+  
+  .input-container > label {
+    padding-left: 1.5em; 
+    padding-bottom: 0.25em;
+    font: 2vh "Fira Sans", sans-serif;
+  }
+  
+  label > .label-small {
+    font-size: 1.25vh;
+  }
+  
+  .date-picker {
+    width: 16em;
+    height: 3em;
+    margin-left: 2em;
+  }
+}
+
+
+@media (min-width: 80rem)
+{
+  
+  header {
+    padding-top: 1em;
+  }
+  
+  .header-fixed {
+    width: 100%;
+    position: fixed;
+    background: rgba(0,0,0,0.9);
+    transition: background 0.6s ease-out;
+  }
+  
+  .header-fixed > .form-container {
+    width: auto;
+    margin-left: auto;
+  }
+  
+  .header-fixed form {
+    padding-bottom: 0; 
+    padding-right: 2em;
+  }
+  
+  header > .logo {
+    padding-left: 1em;
+    transform: scale(1);
+  }
+  
+  .logo-text {
+    font: 3vh "Fira Sans";
+    margin-left: -0.6em;
+    padding-top: 0;
+  }
+  
+  .hero__title__text {
+    text-align: left;
+    font: 13vh "Roboto", sans-serif;
+    padding-left: 0.25em;
+    padding-right: 0;
+    
+  }
+  
+  form {
+    display: flex;
+    flex-direction: row;
+    align-items: flex-end;
+    padding-left: 2em;
+    padding-bottom: 2em;
+  }
+  
+  form > button {
+    width: 9em;
+    height: 2.9em;
+    margin-left: 2em;
+  }
+  
+  .input-container {
+    display: flex;
+    flex-direction: column; 
+    align-items: flex-start;
+    margin-bottom: 0;
+  }
+  
+  .input-container > label {
+    padding-left: 1.5em; 
+    padding-bottom: 0.25em;
+    font: 2vh "Fira Sans", sans-serif;
+  }
+  
+  label > .label-small {
+    font-size: 1.25vh;
+  }
+  
+  .date-picker {
+    width: 20em;
+    height: 3em;
+    margin-left: 2em;
+  }
+
 }
 
 .container {
