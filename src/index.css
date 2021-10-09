@@ -28,7 +28,7 @@ code {
   background: #000;
   background-image: linear-gradient(#00000099, #00000099), url("");
   width: 100%;
-  height: 100vh;
+  min-height: 100vh; /*use min because content inside hero will overflow at points (on resize) and when it does height will be auto */
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat; 
@@ -36,6 +36,26 @@ code {
   flex-direction: column;
   justify-content: space-between;
   align-items: flex-start;
+  padding: 1em 0 0 0;
+}
+
+.header-fixed {
+  width: 100%;
+  position: fixed;
+  top: 0;
+  left: 0;
+  background: rgba(0,0,0,0.9);
+  transition: background 0.6s ease-out;
+}
+
+.header-fixed > .form-container {
+  width: auto;
+  margin-left: auto;
+}
+
+.header-fixed form {
+  padding-bottom: 0; 
+  padding-right: 2em;
 }
 
 header {
@@ -47,23 +67,24 @@ header {
 }
 
 header > .logo {
-  padding-left: 0.5em;
-  transform: scale(0.6);
+  padding-left: 1em;
+  width: 5em;
+  height: 5em;
+  font-size: 16px;
   
 }
 
 .logo-text {
   color: white;
-  font: Fira Sans;
-  font: 1rem "Fira Sans";
-  margin-left: -1.25em;
+  font: 20px "Fira Sans";
+  margin-left: -1em;
   padding-top: 0.5em;
 }
 
 .hero__title__text {
   text-align: center;
   color: white;
-  font: 2.5rem "Roboto", sans-serif;
+  font: 40px "Roboto", sans-serif;
   padding: 0 0.5em;
   letter-spacing: 2px;
   
@@ -84,6 +105,7 @@ form {
 form > button {
   width: 7em;
   height: 2.25em;
+  font-size: 14px;
   border-radius: 5px;
   background-color: rgba(255,255,255,1);
   transition: all 0.6s ease-out;
@@ -106,7 +128,7 @@ form > button {
 .input-container > label {
   padding-bottom: 0.5em;
   color: white;
-  font: 1rem "Fira Sans", sans-serif;
+  font: 16px "Fira Sans", sans-serif;
   transition: transform 0.6s ease-in-out; 
   order: -1;
 }
@@ -117,141 +139,65 @@ form > button {
 }
 
 .date-picker:focus {
-  outline: 3px solid white;
+  outline: 0.1875em solid white;
   background-color: rgba(255,255,255,0.3);
   color: white;
 }
 
 label > .label-small {
-  font-size: 0.75rem;
+  font-size: 12px;
 }
-  
+
 .date-picker {
   width: 14em;
   height: 2.5em;
+  font-size: 14px;
   border-radius: 5px;
   background-color: rgba(255,255,255,0.8);
   transition: all 0.6s ease-out;
   font-weight: bold;
 }
 
-@media (max-height: 30rem)
+@media (min-width: 48.75rem) /* for responsive hero section (typography, logo, and form) */
 {
-  .hero {
-    height: auto;
-  }
-  
-  form {
-    flex-direction: row;
-    flex-wrap: wrap;
-  }
-  
-  form > button {
-    margin-left: 1.25em;
-    margin-top: 0.5em;
-  }
-  
-   .input-container {
-    margin-left: 1.25em;
-  }
-  
-}
-
-@media (min-width: 48.75rem)
-{
-  form {
-    display: flex;
-    flex-direction: row;
-    align-items: flex-end;
-    padding-left: 2em;
-    padding-bottom: 2em;
-  }
-  
-    form > button {
-    width: 9em;
-    height: 2.9em;
-    margin-left: 2em;
-  }
-  
-  .input-container {
-    display: flex;
-    flex-direction: column; 
-    align-items: flex-start;
-    margin-bottom: 0;
-  }
-  
-  .input-container > label {
-    padding-left: 1.5em; 
-    padding-bottom: 0.25em;
-    font: 2vh "Fira Sans", sans-serif;
-  }
-  
-  label > .label-small {
-    font-size: 1.25vh;
-  }
-  
-  .date-picker {
-    width: 16em;
-    height: 3em;
-    margin-left: 2em;
-  }
-}
-
-
-@media (min-width: 80rem)
-{
-  
-  header {
-    padding-top: 1em;
-  }
-  
-  .header-fixed {
-    width: 100%;
-    position: fixed;
-    background: rgba(0,0,0,0.9);
-    transition: background 0.6s ease-out;
-  }
-  
-  .header-fixed > .form-container {
-    width: auto;
-    margin-left: auto;
-  }
-  
-  .header-fixed form {
-    padding-bottom: 0; 
-    padding-right: 2em;
-  }
-  
-  header > .logo {
-    padding-left: 1em;
-    transform: scale(1);
-  }
-  
-  .logo-text {
-    font: 3vh "Fira Sans";
-    margin-left: -0.6em;
-    padding-top: 0;
-  }
-  
-  .hero__title__text {
-    text-align: left;
-    font: 13vh "Roboto", sans-serif;
-    padding-left: 0.25em;
-    padding-right: 0;
+    /* calc( [start val] + (end val - start val) + ((100vw - start screen size) / (end screen size - start screen size)))
+    
+       the above calc formula that we use below acts like css clamp(min, val, max) but with wider support. 
+       The base styles set outside this media query would act like the min values for clamp.
+       
+       The division part goes from 0 to 1 and modifies the font (in pixels) so that we smoothly 
+       go from start val (at 780px/begin desktop sizes) to end val (at 3840/4k), which, for example, 
+       for the logo font below would be about 16px (start val) + 1px per every 100px in screen width. 
+       
+       The calculation mimics the behavior of vw units but as a rate of growth (modified by screen width) 
+       instead of being a percentage of screen width. 
+    */
+    header > .logo {
+    font-size: calc(16px + (48 - 16) * ((100vw - 780px) / (3840 - 780)));
     
   }
   
+  .logo-text {
+    font: calc(20px + (56 - 20) * ((100vw - 780px) / (3840 - 780))) "Fira Sans";
+  }
+  
+
+  
+  .hero__title__text {
+    font: calc(40px + (300 - 40) * ((100vw - 780px) / (3840 - 780))) "Roboto", sans-serif;
+    text-align: left;
+  }
+  
   form {
     display: flex;
     flex-direction: row;
     align-items: flex-end;
-    padding-left: 2em;
-    padding-bottom: 2em;
+    padding-left: 1em;
+    font-size: calc(8px + (40 - 8) * ((100vw - 780px) / (3840 - 780)));
   }
   
   form > button {
-    width: 9em;
-    height: 2.9em;
+    font-size: calc(10px + (46 - 10) * ((100vw - 780px) / (3840 - 780))); 
     margin-left: 2em;
   }
   
@@ -262,22 +208,27 @@ label > .label-small {
     margin-bottom: 0;
   }
   
+   
   .input-container > label {
-    padding-left: 1.5em; 
-    padding-bottom: 0.25em;
-    font: 2vh "Fira Sans", sans-serif;
+    /*set this in px so it grows at same rate as date-picker's margin-left,
+      which is in turn affected by its font-size calc (e.g., starting 18px is 2em at 9px font-size)*/
+    padding-left: calc(18px + (80 - 18) * ((100vw - 780px) / (3840 - 780))); 
+    color: white;
+    font: calc(16px + (60 - 16) * ((100vw - 780px) / (3840 - 780))) "Fira Sans", sans-serif;
+    transition: transform 0.6s ease-in-out; 
+    order: -1;
   }
   
   label > .label-small {
-    font-size: 1.25vh;
+    font-size: calc(12px + (30 - 12) * ((100vw - 780px) / (3840 - 780)));
   }
   
   .date-picker {
-    width: 20em;
+    width: 19em;
     height: 3em;
     margin-left: 2em;
+    font-size: calc(9px + (40 - 9) * ((100vw - 780px) / (3840 - 780)));;
   }
-
 }
 
 .container {
