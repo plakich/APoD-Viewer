@@ -1,47 +1,53 @@
 import { ReactComponent as Logo } from './APoDLogo.svg';
-import {useState, useEffect} from "react"; 
+import {useState, useEffect, useRef} from "react"; 
 import DatePicker from "./DatePicker";
+import useMediaQuery from "./useMediaQuery"; 
+import useToggle from "./useToggle";
 
-const Hero = ({setDateRange, apod}) =>
+const Hero = ({dateRange, setDateRange, heroImgUrl, isLoading}) =>
 {
     
-    const [isApodSet, setIsApodSet] = useState(apod);
-    const [isScrolled, setIsScrolled] = useState(false); 
+    const [isHeroSet, setIsHeroSet] = useState(heroImgUrl); // for setting hero background to be today's APOD img
+    const [isScrolled, setIsScrolled] = useState(false); // so we know when to display a fixed header/menu when scrolled past hero
+    const hero = useRef(null); 
     
+    const isDesktop = useMediaQuery("(min-width: 48.75rem)"); // 780px - so we can know when to show hamburger
+    const [isToggled, toggleValue] = useToggle(false); // to show mobile menu on hamburger click
+    
+    // set hero background to be today's apod image
     useEffect(() =>
     {
-        if ( !isApodSet && typeof apod !== "undefined" ) 
+        if ( !isHeroSet && typeof heroImgUrl !== "undefined" ) 
         {
-            const hero = document.querySelector(".hero");
-            let heroBackgroundArr = getComputedStyle(hero).backgroundImage.split(',');
+            // need to get backgroundImg first because there's an already applied gradient in 
+            // css to slightly darken img so white text shows up better
+            let heroBackgroundImg = getComputedStyle(hero.current).backgroundImage;
             
-            heroBackgroundArr[heroBackgroundArr.length - 1] = `url("${apod}")`;
+            hero.current.style.backgroundImage = `${heroBackgroundImg}, url("${heroImgUrl}")`;
             
-            hero.style.backgroundImage = heroBackgroundArr.join(","); 
-            
-            setIsApodSet(true);
+            setIsHeroSet(true);
         }
         
-    }, [apod]);
+    }, [heroImgUrl, isHeroSet]);
     
     useEffect(() =>
     {
+        // Fn lets us know when user has scrolled below 
+        // hero section/hero datePicker (which is at bottom of hero always). 
         const handleScroll = (e) =>
         {
-            const datePicker = document.querySelector(".hero__title + .form-container"); 
+            const datePicker = hero.current.querySelector(".hero__title + .form-container"); 
             
             const datePickerBtm = datePicker.getBoundingClientRect().bottom; 
             
             if ( datePickerBtm <= 0 )
             {
                 setIsScrolled(true);    
-                datePicker.querySelector("button").disabled = true;
                 
             }
             else
             {
                 setIsScrolled(false);
-                datePicker.querySelector("button").disabled = false;
             }
             
         };
@@ -49,22 +55,44 @@ const Hero = ({setDateRange, apod}) =>
         window.addEventListener("scroll", handleScroll); 
         window.addEventListener("resize", handleScroll); 
         
+        return () => 
+        {
+            window.removeEventListener("scroll", handleScroll);
+            window.removeEventListener("resize", handleScroll); 
+        };
+        
     }, []);
         
     return  (
-    
-        <section className="hero">
+        <section className="hero" ref={hero}>
             {
                 isScrolled ? 
                     <header className="header-fixed">
                         <Logo className="logo"/>
-                        <h3 className="logo-text">APoD Viewer</h3>
-                        <DatePicker setDateRange={setDateRange}/>
+                        <p className="logo-text">APoD Viewer</p>
+                        {
+                            isDesktop ?
+                                <DatePicker isLoading={isLoading} dateRange={dateRange} setDateRange={setDateRange}/>  
+                                      :
+                                        (
+                                         isToggled ?
+                                            <div className="mobile-menu">
+                                                <div className="hamburger-toggle toggled" onClick={toggleValue}>
+                                                    <div className="hamburger toggled"></div>
+                                                </div>
+                                                <DatePicker isLoading={isLoading} dateRange={dateRange} setDateRange={setDateRange}/>
+                                            </div>
+                                                   :
+                                            <div className="hamburger-toggle" onClick={toggleValue}>
+                                                <div className="hamburger"></div>
+                                            </div>
+                                        )
+                        }
                     </header>
                             : 
                     <header>
                         <Logo className="logo"/>
-                        <h3 className="logo-text">APoD Viewer</h3>
+                        <p className="logo-text">APoD Viewer</p>
                     </header>
             }
             <div className="hero__title">
@@ -72,7 +100,7 @@ const Hero = ({setDateRange, apod}) =>
                     Astronomy Picture of the Day Viewer
                 </h1>
             </div>
-            <DatePicker setDateRange={setDateRange}/>
+            <DatePicker isLoading={isLoading} dateRange={dateRange} setDateRange={setDateRange} /> 
                
         </section>
     );
