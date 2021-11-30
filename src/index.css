@@ -1,3 +1,11 @@
+html {
+  box-sizing: border-box;
+}
+
+*, *:before, *:after {
+  box-sizing: inherit;
+}
+
 body {
   margin: 0;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
@@ -11,3 +19,566 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 }
+
+.App {
+  
+}
+
+.hero {
+  background: #000;
+  background-image: linear-gradient(#00000099, #00000099);
+  width: 100%;
+  min-height: 100vh; /*use min because content inside hero will overflow at points (on resize) and when it does height will be auto */
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat; 
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 1em 0 0 0;
+}
+
+.header-fixed {
+  width: 100%;
+  position: fixed;
+  top: 0;
+  left: 0;
+  background: rgba(0,0,0,0.9);
+  transition: background 0.6s ease-out;
+  z-index: 1;
+}
+
+.header-fixed > .form-container {
+  width: auto;
+  margin-left: auto;
+}
+
+.header-fixed form {
+  padding-bottom: 0; 
+  padding-right: 2em;
+}
+
+.hamburger-toggle {
+  cursor: pointer;
+  margin-left: auto;
+  margin-right: 2em;
+  padding: 2em 1em;
+}
+
+.hamburger-toggle.toggled {
+  margin-top: 1em;
+}
+
+.hamburger, .hamburger::after, .hamburger::before {
+  position: relative;
+  content: '';
+  display: block;
+  width: 2em;
+  height: 0.2em;
+  background: white;
+  border-radius: 5px;
+}
+
+.hamburger.toggled {
+  transform: rotate(45deg);
+  height: 0.25em;
+}
+
+.hamburger::after {
+  transform: translateY(0.3em);
+  height: 0.25em;
+}
+
+.toggled.hamburger::after {
+  
+  transform: rotate(91deg);
+
+}
+
+.hamburger::before {
+  transform: translateY(-0.55em);
+  height: 0.25em;
+}
+
+.toggled.hamburger::before {
+  display:none;
+}
+
+.mobile-menu {
+  width: 18.75em;
+  min-height: 100vh;
+  position: fixed;
+  top: 0;
+  right: 0;
+  background: rgba(0,0,0,0.9);
+  transition: background 0.5s ease-out;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  z-index: -1; 
+  
+}
+
+.mobile-menu > .form-container {
+  margin-bottom: 2em;
+}
+
+header {
+  display: flex; 
+  flex-direction: row;
+  justify-content: flex-start;
+  align-items: center;
+  padding-top: 0.5em;
+}
+
+header > .logo {
+  padding-left: 1em;
+  width: 5em;
+  height: 5em;
+  font-size: 16px;
+  
+}
+
+.logo-text {
+  color: white;
+  font: 20px "Fira Sans";
+  margin-left: -1em;
+  padding-top: 0.5em;
+}
+
+.hero__title__text {
+  text-align: center;
+  color: white;
+  font: 40px "Roboto", sans-serif;
+  padding: 0 0.5em;
+  letter-spacing: 2px;
+  
+}
+
+.form-container {
+  width: 100%;
+  position: relative; 
+}
+
+.loaded.form-container::after {
+  content: "";
+  display: block;
+  position: absolute;
+  bottom: 7%;
+  left: 50%;
+  transform: translate(-50%) rotate(45deg) scale(1.2);
+  width: 1.25em;
+  height: 1.25em;
+  border: 0.25em solid #BBB;
+  border-color: transparent #BBB #BBB transparent;
+  animation: bounce 1.25s ease-in-out infinite;
+}
+
+@keyframes bounce {
+  from, to {
+    transform: translate(-50%, 0) rotate(45deg) scale(1.2);
+  }
+  50% {
+    transform: translate(-50%, 0.75em) rotate(45deg) scale(1); 
+  }
+}
+  
+  
+form {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-bottom: 2em;
+}
+
+form > button {
+  width: 7em;
+  height: 2.25em;
+  font-size: 14px;
+  border-radius: 5px;
+  background-color: rgba(255,255,255,1);
+  transition: all 0.6s ease-out;
+}
+
+ form > button:hover, form > button:focus {
+  color: white;
+  background-color: rgba(255,255,255,0.3);
+  outline: 0.1875em solid white;
+  cursor: pointer;
+}
+
+.input-container {
+  display: flex;
+  flex-direction: column; 
+  align-items: center;
+  margin-bottom: 1.25em;
+}
+
+.input-container > label {
+  padding-bottom: 0.5em;
+  color: white;
+  font: 16px "Fira Sans", sans-serif;
+  transition: transform 0.6s ease-in-out; 
+  order: -1;
+}
+
+.date-picker:hover + label, 
+.date-picker:focus + label {
+  transform: translate(0.5em, -0.1em) scale(1.2);
+}
+
+.date-picker:focus {
+  outline: 0.1875em solid white;
+  background-color: rgba(255,255,255,0.3);
+  color: white;
+}
+
+label > .label-small {
+  font-size: 12px;
+}
+
+.date-picker {
+  width: 14em;
+  height: 2.5em;
+  font-size: 14px;
+  border-radius: 5px;
+  background-color: rgba(255,255,255,0.8);
+  transition: all 0.6s ease-out;
+  font-weight: bold;
+}
+
+.date-picker.date-error {
+  outline: 0.25em solid #FF7F7F;
+  
+}
+
+.date-error-msg {
+  color: #FF7F7F;
+  font-weight: bold;
+  white-space: pre-line; 
+}
+
+@media (min-width: 48.75rem) /* for responsive hero section (typography, logo, and form) */
+{
+    /* 
+       calc( [start val] + (end val - start val) * ((100vw - start screen width) / (end screen width - start screen width)))
+       
+       For example, calc(16px + (48 - 16) * ((100vw - 780px) / (3840 - 780)));
+       
+       In english, this says that starting at 780px width, ending at 3840px width, scale the font size from 16 to 48px 
+       based on where we're at within that range.
+       
+       The above calc formula that we use below acts like css clamp(min, val, max) but with wider support. 
+       The base styles set outside this media query would act like the min values for clamp. The formula would scale
+       the value starting at start screen width (e.g., like inside this media query), and stop scaling at an end 
+       screen width where another media query would be used to set the final value.
+       
+       The division part represents the current percentage we're at in the range (end screen width - start screen width),
+       which starts at 780px (or 0%) and ends at 3840px (or 100%) in the above example. We then take this same percentage of 
+       end val - start val (i.e., 48 - 16) and add it to the beginning val (val is mostly used for font below) to scale the
+       value of font.
+       
+       Of course, unless we specifically set another media query for the end screen width along with a max
+       font size, then the end val - start val (e.g., font size) will be scaled past 100% when our screen becomes
+       wider than end val. 
+       
+       In absence of an end value/end screen size media query, it's best to think of the value's rate of
+       growth instead. That way we set our start val size (e.g, font-size: 16px) and then use a single media
+       query to calculate how the value would be scaled past that point (e.g., past 48.75rem or 780px). 
+       
+       Starting at a screen width of 780px/48.75rem, these two equations then give us the same result.
+       
+       1. calc(16px + (48 - 16) * ((100vw - 780px) / (3840 - 780))); (OLD)
+       2. calc(16px + (1.04575163399vw - (48.75rem * (1.04575163399 / 100)))); (NEW)
+       
+       To see how, consider a new screen size range of 0 to 100px in width. At 0, we want the font to be
+       10px, and at 100px we want the font to be 6px more (i.e., 16px), for a growth rate of 6px per 100 pixels in 
+       screen width. The simplified calculation then becomes: 
+       
+       1. calc(10px + (16 - 10) * ( (100vw - 0) / (100 - 0))) (OLD)
+       
+       which is the same as
+      
+       2. calc(10px + 6vw) (NEW)
+       
+       because 6 * 100vw/100 = 6vw for all screen widths 
+       
+       Now if we want to start at a non zero screen width and only start modifying the font size (or any value size)
+       from there, we just have to modify the range as with equation 1. Starting with a base font of 16px at 
+       48.75rem width and growing by 1px per every 100 pixels of screen width gives us the equation:
+       
+       calc(16px + (1vw - (48.75rem * (1 / 100)))); 
+       
+       We just have to get rid of the growth we would have achieved before 48.75rem width
+       (or rather, only account for the growth after 48.75rem).
+      
+    */
+    
+    /*start at 13px and grow font by 1.5px for every 100px change in screen width starting at 48.75rem */
+  header > .logo {
+    font-size: calc(13px + (1.5vw - (48.75rem * (1.5 / 100))) );
+    
+  }
+  
+  .logo-text {
+    font: calc(20px + (1.176vw - (48.75rem * (1.176 / 100)))) "Fira Sans";
+  }
+  
+
+  
+  .hero__title__text {
+    font: calc(40px + (8.45vw - (48.75rem * (8.45 / 100)))) "Roboto", sans-serif;
+    text-align: left;
+  }
+  
+  form {
+    display: flex;
+    flex-direction: row;
+    align-items: flex-end;
+    padding-left: 1em;
+    font-size: calc(8px + (1vw - (48.75rem * (1 / 100))));
+  }
+  
+  form > button {
+    font-size: calc(10px + (1.15vw - (48.75rem * (1.15 / 100)))); 
+    margin-left: 2em;
+  }
+  
+  .input-container {
+    display: flex;
+    flex-direction: column; 
+    align-items: flex-start;
+    margin-bottom: 0;
+  }
+  
+   
+  .input-container > label {
+    /*set this in px so it grows at same rate as date-picker's margin-left,
+      which is in turn affected by its font-size calc (e.g., starting 18px is 2em at 9px font-size)*/
+    padding-left: calc(18px + (2vw - (48.75rem * (2 / 100)))); 
+    color: white;
+    font: calc(16px + (1.4vw - (48.75rem * (1.4 / 100)))) "Fira Sans", sans-serif;
+    transition: transform 0.6s ease-in-out; 
+    order: -1;
+  }
+  
+  label > .label-small {
+    font-size: calc(12px + (0.58vw - (48.75rem * (0.58 / 100))));
+  }
+  
+  .date-picker {
+    width: 19em;
+    height: 3em;
+    margin-left: 2em;
+    font-size: calc(9px + (1vw - (48.75rem * (1 / 100))));
+  }
+  
+  .date-error-msg {
+    padding-left: 2em;
+  }
+
+}
+
+.card-container {
+  display: grid; 
+  grid-auto-flow: row;
+}
+
+.error-message {
+    grid-column: 1 / span 4;
+    font-size: 3rem;
+    margin: 2em 1em;
+    color: #D8000C;
+}
+
+.error-message em {
+  margin-right: 0.5em; 
+}
+
+.card {
+  position: relative;
+  overflow: hidden;
+  margin: 6em auto 2em;
+  box-shadow: 0 0 1.375em rgb(0 0 0 / 20%);
+  border-radius: 0.3125em;
+  width: 17.8125em;
+  height: 31.25em;
+  background-color: rgb(248, 248, 248);
+}
+
+.card-loader {
+  display: block;
+  position: relative;
+  width: 5em;
+  height: 5em;
+  margin: 2em auto; 
+  z-index: -1;
+}
+
+.card-loader .spinner {
+  box-sizing: border-box;
+  display: block;
+  position: absolute;
+  width: 4em;
+  height: 4em;
+  margin: 0.5em;
+  border: 0.5em solid #333;
+  border-radius: 50%;
+  animation: card-loader 1.2s cubic-bezier(0.5, 0, 0.5, 1) infinite;
+  border-color: #333 transparent transparent transparent;
+}
+
+.card-loader div:nth-child(1) {
+  animation-delay: -0.45s;
+}
+.card-loader div:nth-child(2) {
+  animation-delay: -0.3s;
+}
+.card-loader div:nth-child(3) {
+  animation-delay: -0.15s;
+}
+
+@keyframes card-loader {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.card__img {
+  max-width: 100%;
+  height: 9.375em;
+  width: 17.8125em; 
+  object-fit: cover; 
+}
+
+.card__img__hi-res-link {
+  display: block;
+  margin-top: 0.5em;
+}
+
+.card__title, .card__date {
+  text-align: left;
+  font-weight: bold;
+}
+
+.card__date {
+  margin-top: 1em;
+  margin-left: 1.562em;
+  margin-bottom: 1em;
+  display: block;
+}
+
+.card__title {
+  max-height: 3.125em;
+  font-size: 1.25em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  transition: max-height 0.6s ease-out;
+  padding: 1em 1em 0 0;
+  margin-left: 1.25em;
+}
+
+.card__title:hover {
+  max-height: 9.375em;
+  white-space: normal;
+  overflow: visible;
+}
+
+.card__date {
+  font-size: 1em;
+}
+
+.card__desc {
+  overflow: auto;
+  height: 11.875em;
+  padding: 1.5em;
+  text-align: left; 
+  line-height: 1.6;
+  font-size: 0.95em;
+  word-break: break-word;
+}
+
+.hide-visually {
+  border: 0;
+  clip: rect(0 0 0 0);
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  padding: 0;
+  position: absolute;
+  white-space: nowrap;
+  width: 1px;
+}
+
+@media (min-width: 50rem)
+{
+  .card-container {
+    grid-template-columns: repeat(2, 1fr); 
+  }
+  
+  .card {
+    font-size: calc(16px + (0.4vw - (50rem * (0.4 / 100))));
+  }
+}
+
+@media (min-width: 80rem)
+{
+  .card-container {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (min-width: 120rem)
+{
+  .card-container {
+    grid-template-columns: repeat(4, 1fr);
+  }
+  
+}
+
+@media (min-width: 160rem) 
+{
+  .card {
+    font-size: calc(16px + (0.8vw - (50rem * (0.8 / 100))));
+  }
+  
+  .loaded.form-container::after {
+
+    width: 2.25em;
+    height: 2.25em;
+   
+  }
+}
+
+/* For if we just want to grow the
+cards at specific screen widths and not
+have fully responsive cards.
+
+@media (min-width: 160rem)*/
+/*{*/
+  
+/*  .card {*/
+/*    font-size: 1.5rem;*/
+/*  }*/
+
+/*}*/
+
+/*@media (min-width: 200rem)*/
+/*{*/
+/*  .card {*/
+/*    font-size: 1.875rem;*/
+/*  }*/
+/*}*/
+
+/*@media (min-width: 240rem)*/
+/*{*/
+/*  .card {*/
+/*    font-size: 2.25rem;*/
+/*  }*/
+  
+/*}*/
