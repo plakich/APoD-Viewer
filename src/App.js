@@ -158,7 +158,7 @@ function App()
             setApod([]); //so clear old state
         }
         
-    }, [dateRange, setOptions, isFirstRender]); // dateRange set by user in some DatePicker
+    }, [dateRange, setOptions]); // dateRange set by user in some DatePicker
     
     // The currentStart and currentEnd dates below are the
     // same as for the newDateRange that the first useEffect
