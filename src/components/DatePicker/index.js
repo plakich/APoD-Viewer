@@ -4,7 +4,7 @@ import {getFormattedDate,
         validateDateChars, 
         shiftMonthDayChars,
         customizeInputErrorMsg,
-        dropErrorChars} from "./dateFormatters";
+        dropErrorChars} from "../../services/Formatters/dateFormatters";
 
 const DatePicker = (props) => 
 {
@@ -21,7 +21,7 @@ const DatePicker = (props) =>
     const [isError, setIsError] = useState({fromDateError: false, toDateError: false, fromDateMsg: "", toDateMsg: ""}); // to show error msgs under inputs
     const [isBtnDisabled, setIsBtnDisabled] = useState(false); 
     
-    // show input errors, but clear after 5 seconds
+    // show input errors, but clear after 6 seconds
     useEffect(() =>
     {
         let id = setTimeout(() =>
@@ -101,7 +101,7 @@ const DatePicker = (props) =>
         if (isBtnDisabled)
         {
             const formContainer = document.querySelector(".hero__title + .form-container");
-            formContainer.classList.add("loaded"); //so down arrow animation plays 
+            formContainer?.classList.add("loaded"); //so down arrow animation plays 
         }
         
     }, [isBtnDisabled]);
@@ -169,18 +169,18 @@ const DatePicker = (props) =>
         if ( (isValidFromDate && isValidToDate) && (isFromDateInRange && isToDateInRange) && isDateRangeChrononological )
         {
             // send off dates to server to make api call
-            setDateRange({startDate: formattedFrom, endDate: formattedTo, currentStart: formattedFrom, currentEnd: formattedTo }); 
+            setDateRange({startDate: formattedFrom, endDate: formattedTo}); 
         }
         else if ( !isExistsFromDate && isValidToDate && isToDateInRange )  //as long as one date is valid and in range, send to server to get pic for that day
         {
             // send toDate to server to make api call
-            setDateRange({startDate: formattedTo, endDate: formattedTo, currentStart: formattedTo, currentEnd: formattedTo}); 
+            setDateRange({startDate: formattedTo, endDate: formattedTo}); 
 
         }
         else if ( !isExistsToDate && isValidFromDate && isFromDateInRange ) //as long as one date is valid and in range, send to server to get pic for that day
         {
             // send fromDate to server to make api call
-            setDateRange({startDate: formattedFrom, endDate: formattedFrom, currentStart: formattedFrom, currentEnd: formattedFrom}); 
+            setDateRange({startDate: formattedFrom, endDate: formattedFrom}); 
            
         }
         else if ( (isValidFromDate && isFromDateInRange) && (isValidToDate && isToDateInRange) && !isDateRangeChrononological )
@@ -199,15 +199,15 @@ const DatePicker = (props) =>
             }
             else if ( !isFromDateInRange ) 
             {
-                 setIsError({...isError, fromDateError: true, fromDateMsg: 
-                 `Start Date must be no earlier than the day of the first APOD ${earliestFromDate} 
-                 or later than today's date ${todaysDate}`});
+                setIsError({...isError, fromDateError: true, fromDateMsg: 
+                `Start Date must be no earlier than the day of the first APOD ${earliestFromDate} 
+                or later than today's date ${todaysDate}`});
                 
             }
             
             if ( !isValidToDate )
             {
-                 setIsError( state => ({...state, toDateError: true, toDateMsg: "End Date is NOT a valid date!"}));
+                setIsError( state => ({...state, toDateError: true, toDateMsg: "End Date is NOT a valid date!"}));
                 
             }
             else if ( !isToDateInRange )
@@ -215,7 +215,6 @@ const DatePicker = (props) =>
                 setIsError(state => ({...state, toDateError: true, toDateMsg: 
                  `End date must be no later than today's date ${todaysDate} or 
                  earlier than the day of the first APOD ${earliestFromDate}`}));
-               
             }
             
         }
@@ -342,7 +341,7 @@ const DatePicker = (props) =>
                     setIsError({...isError, [name + "Error"]: true, [name + "Msg"]: customizeInputErrorMsg(value, errorArray) });
                 }
                 
-                value = dropErrorChars(value); // if date string still has error chars, just drop them from string
+                value = dropErrorChars(value, errorArray); // if date string still has error chars, just drop them from string
                
             }
             
@@ -363,10 +362,8 @@ const DatePicker = (props) =>
         
         }
    
-   
-    setDateInput({...dateInput, [name]: value});
+        setDateInput({...dateInput, [name]: value});
         
-    
     };
     
     return (

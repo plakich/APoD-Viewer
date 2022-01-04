@@ -1,4 +1,12 @@
 /*
+    This file contains our collection of date formatters.
+    The name date is used loosely, as the dates we manipulate 
+    are Strings, not Date objects, though the values often 
+    originate from a Date object.
+*/
+
+
+/*
     @param date {String} - a string representing a date
     fn makes sure date is in correct format for api call (i.e., YYYY/MM/DD )
     fn pads month and day with zeros if needed
@@ -20,6 +28,7 @@ export const getFormattedDate = (date) =>
 // Australia, but still the 30th in the US. 
 // This would result in a bad call to the api 
 // if that day wasn't available yet. 
+
 // export const convertTimeZone = (offset) =>
 //{
 // // create Date object for current location
@@ -46,7 +55,7 @@ export const getFormattedDate = (date) =>
     We don't insert slashes if not needed yet 
     (e.g., 199 not 199 / but need slash for 1999 -> 1999/ )
 */
-export const formatSlashes = (date) => 
+export const formatSlashes = (date = "") => 
 {
     let formattedVal = date; //assume string correctly formatted, below we format if not
     
@@ -82,7 +91,7 @@ export const formatSlashes = (date) =>
 };
 
 /*
-    @param {String} date - date as string in YYYY/MM/DD format
+    @param {String} date - date (length <= 10) as string in YYYY/MM/DD format
     @returns {Object} - with props isValidDateChars and errorArray
         @returns {Boolean} isValidDateChars - true is chars of date are valid
         @returns {Array} errorArray - date String in array format with error
@@ -93,7 +102,7 @@ export const formatSlashes = (date) =>
     (e.g., 1999/09/31 isn't valid since there aren't 31 days
     in September)
 */
-export const validateDateChars = (date) =>
+export const validateDateChars = (date = "") =>
 {
     const charsAllowed = new Map(
         [   [0, "1 2"],
@@ -104,7 +113,7 @@ export const validateDateChars = (date) =>
             [5, "0 1"],
             [6, new Map([
                             [0, "1 2 3 4 5 6 7 8 9"],
-                            [1, "0 1 2"] // October (11), nov (11), and dec (12)
+                            [1, "0 1 2"] // October (10), nov (11), and dec (12)
                         ])],
             [7, "/"],
             [8, "0 1 2 3"],
@@ -114,24 +123,31 @@ export const validateDateChars = (date) =>
                         ])]
     ]);
     
-    const errorArray = date.split("").map((dateChar, i, arrValue) =>
+    const errorArray = date.split("").map((dateChar, i, dateCharsArr) =>
     {
         let isValidChar = true; 
         
         // some positions don't have a specific range of chars they map to,
         // in which case as long as said char is an integer it's valid.
-        isValidChar = charsAllowed.get(i) ? 
-                                            ( typeof charsAllowed.get(i) === "string" 
-                                              ? charsAllowed.get(i).indexOf(dateChar) !== -1
-                                              : ( charsAllowed.get(i).get( Number( arrValue[i-1] ) ) 
-                                                  ? charsAllowed.get(i).get( Number( arrValue[i-1] ) ).indexOf(dateChar) !== -1 
-                                                  : Number.isInteger(Number(dateChar)) ) )
-                                          : Number.isInteger(Number(dateChar)); 
+        if ( typeof charsAllowed.get(i)?.includes?.(dateChar) !== "undefined" ) // position i in date maps (in charsAllowed map) to a string
+        {
+            isValidChar = charsAllowed.get(i).includes(dateChar);
+        }
+        else if ( typeof charsAllowed.get(i)?.get( Number( dateCharsArr[i-1] ) ) !== "undefined" ) // position i in date maps to another map 
+        {
+            // note we look at previous char entered (i-1) to see if current char
+            // is correct or not (e.g., for Month, 03 is fine but 13 is not)
+            isValidChar = charsAllowed.get(i).get( Number( dateCharsArr[i-1] ) ).includes(dateChar);
+        }
+        else // position i in date is undefined in charsAllowed map
+        {
+            isValidChar = Number.isInteger( Number(dateChar) );
+        }
        
         return isValidChar && i < 10 ? dateChar : "E"; //E is for error. Every char that makes string over 10 chars long is invalid since date is YYYY/MM/DD format
     });
    
-    return {isValidDateChars: errorArray.indexOf("E") === -1, errorArray: errorArray}; 
+    return {isValidDateChars: !errorArray.includes("E"), errorArray: errorArray}; 
     
 };
 
@@ -145,13 +161,13 @@ export const validateDateChars = (date) =>
     fn uses errorArray, which is the same length as value, to replace error characters with zeros 
     to make a valid date (e.g., 1999/5/5 becomes 1999/05/05)
 */
-export const shiftMonthDayChars = (date, errorArray) =>
+export const shiftMonthDayChars = (date = "", errorArray = []) =>
 {
     const monthStartIndex = 5; 
     
     // Make date an array so we can modify 
     // it without changing length 
-    // (e.g. string "19" -> ['1', '9'] -> ['01', '9'] but same length array).
+    // (e.g. string "19" -> ['1', '9'] -> ['01', '9'] but same length array as string length).
     // We need this below to keep the same position as at in errorArray
     // while potentially changing each char of dateChars
     let dateChars = date.split(""); 
@@ -197,7 +213,7 @@ export const shiftMonthDayChars = (date, errorArray) =>
         values for date String signifying positions of errors in date with char E (e.g., 1999/E0/E) 
     @returns {String} errorMsg - custom errorMsg explaining what position errors are at in date string (i.e., YEAR/MONTH/DAY)
 */
-export const customizeInputErrorMsg = (date, errorArray) =>
+export const customizeInputErrorMsg = (date = "", errorArray = []) =>
 {
     let errorMsg = "";
     
@@ -232,10 +248,8 @@ export const customizeInputErrorMsg = (date, errorArray) =>
 // @returns {String} date - date with error chars, if any, removed
 // Drops error chars from errorArray (e.g., EYYE/EE/DD)
 // returned by validateDateChars fn
-export const dropErrorChars = (date) => 
+export const dropErrorChars = (date = "", errorArray = "") => 
 {
-    let {errorArray} = validateDateChars(date);
-    
     while(errorArray.indexOf("E") !== -1)
     {
         //so we can access and modify string pos i without changing length of string
@@ -263,4 +277,107 @@ export const dropErrorChars = (date) =>
     }
     
     return date; 
+};
+
+
+ /*
+    @param {Object} dateRange - obj with startDate, endDate, currentStart,
+    and currentEnd properties. When calling this fn for the first time,
+    leave out currentStart and currentEnd properties, which signals to 
+    the fn it's a new dateRange being modified for the first time.
+    
+    On each call, fn subtracts a constant amount of dates from the range
+    of dates between start and end dates and sets the currentStart and
+    currentEnd properties to those dates. We use this fn before our api
+    calls so we only load a set amount of data/dates at once, instead
+    of the whole range (because it may be too much at once).
+    
+    In other words, fn modifies dateRange so the following always holds true:
+    
+    startDate <= currentStart <= currentEnd <= endDate
+    
+    @returns {Object} dateObj - obj of strings representing new dateRange,
+    always <= 30 days, with currentStart and currentEnd properties
+    signifying dateRange between startDate and endDate. 
+    Returns null if dateRange cannot be modified anymore (i.e.,
+    when currentStart === startDate)
+*/
+export const modifyDateRange = (dateRange) =>
+{
+    // Subtract 30 days from current dateRange. 
+    // This is so we fetch only 30 apods/days at a time.
+    // NASA's APOD api can't handle a request much larger
+    // than this without timing out.
+    // Could've also made this an argument to the fn
+    // if we didn't always want a set amount. 
+    const apodFetchMax = 30; 
+
+    // Convert Strings to Dates because we need to perform subtraction
+    // on our dates.
+    let dateObj = {
+        startDate: new Date(dateRange?.startDate),
+        endDate: new Date(dateRange?.endDate),
+        currentStart: new Date(dateRange?.currentStart || dateRange?.startDate),
+        currentEnd: new Date(dateRange?.currentEnd || dateRange?.endDate)
+    };
+    
+    // The currentDate vars are reserved for modifications, 
+    // so we shouldn't have one if the date hasn't been modified yet.
+    
+    const isNewDate = !dateRange?.currentStart;
+    
+    // Below, we modify the currentStart and currentEnd properties to get more dates between start and end. 
+    if ( isNewDate ) 
+    {
+        // Start at currentEnd because we need to work our way back by set amount
+        // from there and currentStart may be further back already than that amount.
+        dateObj.currentEnd.setDate(dateObj.currentEnd.getDate() - apodFetchMax); 
+        dateObj.currentStart = dateObj.currentEnd;
+        dateObj.currentEnd = new Date(dateObj.endDate); 
+    }
+    else //then we're modifying an existing date and need to fetch apodFetchMax more apods 
+    {
+        dateObj.currentEnd = dateObj.currentStart; 
+        dateObj.currentEnd.setDate(dateObj.currentEnd.getDate() - 1); // Move back one day since we already have that day's apod.
+        dateObj.currentStart = new Date(dateObj.currentStart); // so currentStart and currentEnd no longer same reference
+        dateObj.currentStart.setDate(dateObj.currentStart.getDate() - apodFetchMax); 
+      
+    }
+
+    // Now transform dates back into string for api call. 
+    // If not this one, then subsequent calls to this fn will
+    // eventually make currentStart = startDate (i.e., last possible modification). 
+    // Below cases account for if currentStart was pushed back too
+    // far (i.e., when currentStart <= startDate) 
+    if (dateObj.currentStart >= dateObj.startDate)
+    {
+        for (const date in dateObj)
+        {
+            if (dateObj.hasOwnProperty(date))
+            {
+                dateObj[date] = getFormattedDate(dateObj[date]);
+            }
+        }
+      
+    }
+    else if (dateObj.currentEnd >= dateObj.startDate) 
+    {
+        for (const date in dateObj)
+        {
+            if (dateObj.hasOwnProperty(date))
+            {
+                dateObj[date] = getFormattedDate(dateObj[date]);
+            }
+        }
+      
+        // means this is the last modification possible to our dateRange
+        dateObj.currentStart = dateObj.startDate; 
+    }
+    else // for testing completeness, but shouldn't ever make it here in the app 
+    {    // else we'd be trying to fetch data outside given dateRange
+    
+        dateObj = null; // signals no more modifications to dateRange possible
+    }
+    
+    return dateObj; 
 };

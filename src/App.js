@@ -1,131 +1,50 @@
 import { useState, useEffect, useRef } from 'react';
-import './App.css';
-import {getFormattedDate} from "./dateFormatters";
-import Hero from "./Hero";
-import useFetchOnScroll from "./useFetchOnScroll"; 
-import useIsFirstRender from "./useIsFirstRender"; 
-import ApodList from "./ApodList"; 
+import {getFormattedDate, modifyDateRange} from "./services/Formatters/dateFormatters";
+import Hero from "./components/Hero";
+import useFetchOnScroll from "./hooks/useFetchOnScroll"; 
+import useIsFirstRender from "./hooks/useIsFirstRender"; 
+import ApodList from "./components/ApodList"; 
 
 function App() 
 {
-  
-    const todaysDate = getFormattedDate(); // in YYYY/MM/DD format
+    // Get new Date in YYYY/MM/DD format. We use forward slashes 
+    // and not hypens. In fact, we replace them on 
+    // the client side whenever we might get a date 
+    // with a hyphen for two reasons: 
+    // 1. We want them displayed like that to the user.
+    // 2. When the Date constructor is
+    // given a date with a hyphen in the above format
+    // (YYYY-MM-DD), it interprets the date as
+    // being in UTC format (which may give a date
+    // a day behind or ahead of the current date). 
+    const todaysDate = getFormattedDate(); 
     
     const [apod, setApod] = useState([]);
     
     // We start by just showing today's date. 
-    // API makes call by setting a start and end date on the url,
+    // API makes call by setting a start and end date as a query string on the url,
     // so we have to set a start and end regardless of whether it's 
     // a single day or not. 
     const [dateRange, setDateRange] = useState( 
       { 
           startDate: todaysDate, 
-          endDate: todaysDate, 
-          currentStart: todaysDate, 
-          currentEnd: todaysDate 
-          
+          endDate: todaysDate
       });
     
     const [{isLoading, isScrolled, error, data}, , setOptions] = useFetchOnScroll("/api", [], 
         {
             method: "POST", 
             headers: {"Content-Type": "application/json"},
-            body: JSON.stringify({startDate: dateRange.currentStart, endDate: dateRange.currentEnd})
+            body: JSON.stringify({startDate: todaysDate, endDate: todaysDate})
         }, 95); //fetch more data when body is 95 percent scrolled
+        
     const isFirstRender = useIsFirstRender(); 
     const modifiedDateRange = useRef(
         {
             startDate: todaysDate, 
-            endDate: todaysDate, 
-            currentStart: todaysDate, 
-            currentEnd: todaysDate
+            endDate: todaysDate
             
         }); // Ref needed so we can modify dateRange between renders without rerendering
-    
-    /*
-        @param dateRange {Object} - obj with startDate, endDate, currentStart,
-        and currentEnd properties. 
-        On each call, fn subtracts a constant amount of dates from the range
-        of dates between start and end dates and sets the currentStart and
-        currentEnd properties to those dates. 
-        
-        In other words, fn modifies dateRange so the following holds true:
-        
-        startDate <= currentStart <= currentEnd <= endDate
-        
-        Returns an object of strings representing new dateRange (fn does
-        not set new dateRange) or null if dateRange cannot be modified anymore. 
-    */
-    const modifyDateRange = (dateRange) =>
-    {
-        // Subtract 30 days from current dateRange. 
-        // This is so we fetch only 30 apods/days at a time.
-        // NASA's APOD api can't handle a request much larger
-        // than this without timing out.
-        const apodFetchMax = 30; 
-    
-        // Obj below will be basis for our dateRange modifications.
-        // Ultimately, the dates will be converted back into 
-        // a string before returning. 
-        let dateObj = {
-            startDate: new Date(dateRange.startDate),
-            endDate: new Date(dateRange.endDate),
-            currentStart: new Date(dateRange.currentStart),
-            currentEnd: new Date(dateRange.currentEnd)
-        };
-        
-        // Below, we modify the currentStart and currentEnd properties to get more dates between start and end. 
-        if (dateRange.startDate === dateRange.currentStart && dateRange.currentEnd === dateRange.endDate) //then it's a newly entered date
-        {
-            dateObj.currentEnd.setDate(dateObj.currentEnd.getDate() - apodFetchMax); 
-            dateObj.currentStart = dateObj.currentEnd;
-            dateObj.currentEnd = new Date(dateRange.currentEnd); 
-        }
-        else //then we're modifying an existing date and need to fetch apodFetchMax more apods 
-        {
-            dateObj.currentEnd = dateObj.currentStart; 
-            dateObj.currentEnd.setDate(dateObj.currentEnd.getDate() - 1); //move back one day since we already have that day's apod
-            dateObj.currentStart = new Date(dateObj.currentStart); 
-            dateObj.currentStart.setDate(dateObj.currentStart.getDate() - apodFetchMax); 
-          
-        }
-
-        // Now transform dates back into string for api call. 
-        // If not this one, then subsequent calls to this fn will
-        // eventually make currentStart = startDate. 
-        // Below cases account for if currentStart was pushed back too
-        // far (i.e., when currentStart <= startDate) 
-        if (dateObj.currentStart >= dateObj.startDate)
-        {
-            for (const date in dateObj)
-            {
-                if (dateObj.hasOwnProperty(date))
-                {
-                    dateObj[date] = getFormattedDate(dateObj[date]);
-                }
-            }
-          
-        }
-        else if (dateObj.currentEnd >= dateObj.startDate) 
-        {
-            for (const date in dateObj)
-            {
-                if (dateObj.hasOwnProperty(date))
-                {
-                    dateObj[date] = getFormattedDate(dateObj[date]);
-                }
-            }
-          
-            dateObj.currentStart = dateObj.startDate;
-        }
-        else //for testing completeness, but shouldn't ever make it here else we'd be fetching duplicate data
-        {
-            dateObj = null; //signals no more modifications to dateRange possible
-        }
-        
-        return dateObj; 
-    };
-    
     
     // On dateRange change (i.e., user submits new date),
     // use modifiedDateRange ref to save modified dateRange
@@ -133,11 +52,17 @@ function App()
     // make call for more apod data. 
     useEffect(() =>
     {
-        if (isFirstRender) return; // because the first call to useFetchOnScroll does our first fetch
+        if (isFirstRender) 
+        {
+            return; // because the first call to useFetchOnScroll does our first fetch
+        }
         
-        const newDateRange = modifyDateRange(dateRange);
+        const newDateRange = modifyDateRange( {...dateRange} );
         
-        if ( !newDateRange ) return; // Shouldn't ever happen 
+        if ( !newDateRange ) 
+        {
+            return; // Shouldn't ever happen 
+        }
         
         const options = {
             body: JSON.stringify({
@@ -150,12 +75,13 @@ function App()
         setOptions(prev => ({...prev, ...options}) ); 
         
         // We don't want to update state again, but we do need to save dateRange we're currently
-        // using. 
+        // using. We save the dateRange and not the newDateRange in case the request we made 
+        // above fails (see comment below for second useEffect). 
         modifiedDateRange.current = {...dateRange}; 
         
-        if(newDateRange.endDate === newDateRange.currentEnd) //then we're setting a newly entered apod
+        if(newDateRange.endDate === newDateRange.currentEnd) // then we're setting a newly entered apod
         {
-            setApod([]); //so clear old state
+            setApod([]); // so clear old state
         }
         
     }, [dateRange, setOptions]); // dateRange set by user in some DatePicker
@@ -185,7 +111,7 @@ function App()
         if (isScrolled && !isLoading && 
             modifiedDateRange.current?.startDate !== modifiedDateRange.current?.currentStart)
         {
-            setDateRange(modifiedDateRange.current); 
+            setDateRange({...modifiedDateRange.current}); 
             modifiedDateRange.current = null; 
           
         }
@@ -214,7 +140,7 @@ function App()
             </section>
             {
                 isLoading &&
-                        <div className="card-loader">
+                        <div data-testid="loading" className="card-loader">
                             <div className="spinner"></div>
                             <div className="spinner"></div>
                             <div className="spinner"></div>

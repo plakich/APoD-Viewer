@@ -1,8 +1,8 @@
-import { ReactComponent as Logo } from './APoDLogo.svg';
+import { ReactComponent as Logo } from '../../APoDLogo.svg';
 import {useState, useEffect, useRef} from "react"; 
-import DatePicker from "./DatePicker";
-import useMediaQuery from "./useMediaQuery"; 
-import useToggle from "./useToggle";
+import DatePicker from "../DatePicker";
+import useMediaQuery from "../../hooks/useMediaQuery"; 
+import useToggle from "../../hooks/useToggle";
 
 const Hero = ({dateRange, setDateRange, heroImgUrl, isLoading}) =>
 {
@@ -77,13 +77,13 @@ const Hero = ({dateRange, setDateRange, heroImgUrl, isLoading}) =>
                                         (
                                          isToggled ?
                                             <div className="mobile-menu">
-                                                <div className="hamburger-toggle toggled" onClick={toggleValue}>
+                                                <div data-testid="hamburger-toggle" className="hamburger-toggle toggled" onClick={toggleValue}>
                                                     <div className="hamburger toggled"></div>
                                                 </div>
                                                 <DatePicker isLoading={isLoading} dateRange={dateRange} setDateRange={setDateRange}/>
                                             </div>
                                                    :
-                                            <div className="hamburger-toggle" onClick={toggleValue}>
+                                            <div data-testid="hamburger-toggle" className="hamburger-toggle" onClick={toggleValue}>
                                                 <div className="hamburger"></div>
                                             </div>
                                         )

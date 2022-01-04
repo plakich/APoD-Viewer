@@ -503,6 +503,13 @@ label > .label-small {
   word-break: break-word;
 }
 
+/*
+see https://webaim.org/techniques/css/invisiblecontent/
+
+for hiding content visually but keeping for screen readers
+
+*/
+
 .hide-visually {
   border: 0;
   clip: rect(0 0 0 0);

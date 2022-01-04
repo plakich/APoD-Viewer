@@ -130,10 +130,13 @@ const useFetchOnScroll = (initialUrl, initialData = [], initialOptions = {method
                 // We don't actually want to display an
                 // error for an aborted request. We just 
                 // rather let the newest one go through. 
-                if (e instanceof DOMException) return; 
+                if (e instanceof DOMException) 
+                {
+                    return; 
+                }
                 
                 setError(e); 
-                // could've put the two sets below inside 
+                // Could've put the two sets below inside 
                 // a finally block if we didn't treat DOMException 
                 // differently from normal errors. 
                 setIsScrolled(false); 
@@ -144,7 +147,7 @@ const useFetchOnScroll = (initialUrl, initialData = [], initialOptions = {method
       
       fetchData();
       
-    }, [url, options]); //fetch more data when url or options change
+    }, [url, options]); // Fetch more data when url or options change.
     
     return [{error, isScrolled, isLoading, data}, setUrl, setOptions]; 
     

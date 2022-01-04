@@ -1,5 +1,5 @@
 import {memo} from "react"; 
-import ApodCard from "./ApodCard"; 
+import ApodCard from "../ApodCard"; 
 
 const ApodList = ({apodList}) => 
 {
