@@ -536,23 +536,23 @@ describe("customizeInputErrorMsg  (error chars 'E' are numbers at wrong position
 
 describe("modifyDateRange", () =>
 {
-    it("returns null when given no date, already fully modified date (currentStart === startDate), " +
+    it("returns null when given no date, already fully modified dateRange (currentStart === startDate), " +
         "or dateRange with errors (i.e, non chronological or invalid dates)", () =>
     {
         let dateRange = {
                 startDate: "2021/11/10",
                 endDate: "2021/10/10"
-            };
+            }; // start must come before end
         
-        let actual = dateFormatters.modifyDateRange(dateRange); // dateRange not chronological 
+        const unChronologicalRange = dateFormatters.modifyDateRange(dateRange); 
         
-        expect(actual).toEqual(null); 
+        expect(unChronologicalRange).toEqual(null); 
         
         dateRange.startDate = new Date('alkdfjij').toString() // invalid date;
         
-        actual = dateFormatters.modifyDateRange(dateRange);
+        const invalidRange = dateFormatters.modifyDateRange(dateRange);
         
-        expect(actual).toEqual(null); 
+        expect(invalidRange).toEqual(null); 
         
         dateRange = {
                 startDate: "2021/10/10",
@@ -561,13 +561,13 @@ describe("modifyDateRange", () =>
                 currentEnd: "2021/10/10"
             }; // currentStart === startDate
         
-        actual = dateFormatters.modifyDateRange(dateRange); //no more modification possible on this dateRange
+        const fullyModifiedRange = dateFormatters.modifyDateRange(dateRange); //no more modification possible on this dateRange
         
-        expect(actual).toEqual(null); 
+        expect(fullyModifiedRange).toEqual(null); 
         
-        actual = dateFormatters.modifyDateRange(); // no dateRange given
+        const noDateRangeGIven = dateFormatters.modifyDateRange(); 
         
-        expect(actual).toEqual(null); 
+        expect(noDateRangeGIven).toEqual(null); 
     });
     
     describe("fn always returns <= 30 days at a time, " +
@@ -595,15 +595,15 @@ describe("modifyDateRange", () =>
         test("dateRange of 30 days", () =>
         {
             let dateRange =  {
-                    startDate: "2021/11/10",
+                    startDate: "2021/11/11",
                     endDate: "2021/12/10",
                     currentStart: "",
                     currentEnd: ""
-                }; // 30 days
+                }; // 30 days, start and end dates inclusive
                 
             let actual = dateFormatters.modifyDateRange(dateRange);
             
-            dateRange.currentStart = "2021/11/10";
+            dateRange.currentStart = "2021/11/11";
             dateRange.currentEnd = "2021/12/10"; 
                 
             expect(actual).toEqual(dateRange); 
@@ -617,14 +617,14 @@ describe("modifyDateRange", () =>
         test("dateRange of 31 days", () =>
         {
             let dateRange =  {
-                startDate: "2021/11/09",
+                startDate: "2021/11/10",
                 endDate: "2021/12/10"
-            }; // 31 days
+            }; // 31 days, start and end inclusive
         
             let actual = dateFormatters.modifyDateRange(dateRange);
             
-            dateRange.currentStart = "2021/11/10"; // = 2021/12/10 - 30 days
-            dateRange.currentEnd = "2021/12/10"; 
+            dateRange.currentStart = "2021/11/11"; 
+            dateRange.currentEnd = "2021/12/10"; // 11/11 + 29 days = 12/10 = 30 days
             
             expect(actual).toEqual(dateRange);   
             
@@ -633,10 +633,14 @@ describe("modifyDateRange", () =>
             actual = dateFormatters.modifyDateRange(dateRange); 
             
             // 1 more day/the rest of the original dateRange
-            dateRange.currentStart = "2021/11/09"; 
-            dateRange.currentEnd = "2021/11/09"; 
+            dateRange.currentStart = "2021/11/10"; 
+            dateRange.currentEnd = "2021/11/10"; 
             
             expect(actual).toEqual(dateRange); 
+
+            actual = dateFormatters.modifyDateRange(dateRange); // but can't modify anymore, hence can only return null
+
+            expect(actual).toEqual(null); 
                     
         });
     });

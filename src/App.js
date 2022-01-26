@@ -1,10 +1,17 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import {getFormattedDate, modifyDateRange} from "./services/Formatters/dateFormatters";
 import Hero from "./components/Hero";
 import useFetchOnScroll from "./hooks/useFetchOnScroll"; 
 import useIsFirstRender from "./hooks/useIsFirstRender"; 
 import ApodList from "./components/ApodList"; 
 
+// Rough outline of the ways that data flows (based on user input) in App:
+// 1. set dateRange then set > options (which fetches data) > isLoading > data > 
+// error > isScrolled > isLoading > apod
+// 2. same as above but isScrolled changes first, then dateRange.
+// The above is not 100% accurate depending on situation (e.g., apod
+// set directly after data set if sets aren't batched, was the fetch
+// successful, etc..), but it helps for visualization purposes.
 function App() 
 {
     // Get new Date in YYYY/MM/DD format. We use forward slashes 
@@ -20,16 +27,31 @@ function App()
     const todaysDate = getFormattedDate(); 
     
     const [apod, setApod] = useState([]);
+
+    // Set after first data fetch.
+    // We're only doing this so our memoized
+    // Hero component won't unnecessarily
+    // rerender.
+    const todaysApodImg = useRef(); 
     
     // We start by just showing today's date. 
     // API makes call by setting a start and end date as a query string on the url,
     // so we have to set a start and end regardless of whether it's 
     // a single day or not. 
     const [dateRange, setDateRange] = useState( 
-      { 
-          startDate: todaysDate, 
-          endDate: todaysDate
-      });
+        { 
+            startDate: todaysDate, 
+            endDate: todaysDate
+        });
+    
+    // For child DatePicker components.
+    // As above for todayApodImg ref, 
+    // this is done so Hero can be 
+    // memoized. 
+    const memoizedSetDateRange = useCallback((dateRange) =>
+    {
+        setDateRange(dateRange);
+    }, [setDateRange]);
     
     const [{isLoading, isScrolled, error, data}, , setOptions] = useFetchOnScroll("/api", [], 
         {
@@ -37,7 +59,7 @@ function App()
             headers: {"Content-Type": "application/json"},
             body: JSON.stringify({startDate: todaysDate, endDate: todaysDate})
         }, 95); //fetch more data when body is 95 percent scrolled
-        
+
     const isFirstRender = useIsFirstRender(); 
     const modifiedDateRange = useRef(
         {
@@ -96,11 +118,18 @@ function App()
     // would be same as for last time this was called).
     useEffect(() =>
     {
+        // Our first api call is always for today's date.
+        // This ensures we only set this once, for the
+        // first data that comes back. 
+        todaysApodImg.current = todaysApodImg.current ??
+            data[0]?.hdurl ?? data[0]?.thumbnail_url ?? data[0]?.url;
+
         modifiedDateRange.current.currentStart = data[0]?.date.replace(/-/g, "/");
         modifiedDateRange.current.currentEnd = data[data.length - 1]?.date.replace(/-/g, "/"); 
         
         data.reverse(); // because we display dates in descending order. 
         setApod(prev => [...prev, ...data]); 
+        
     }, [data]); // when fetch receives data back from server
   
     useEffect(() =>
@@ -112,17 +141,16 @@ function App()
             modifiedDateRange.current?.startDate !== modifiedDateRange.current?.currentStart)
         {
             setDateRange({...modifiedDateRange.current}); 
-            modifiedDateRange.current = null; 
-          
+            modifiedDateRange.current = null;   
         }
-    
+
     },[isScrolled, isLoading]);
   
     return (
         <div className="App">
-            <Hero heroImgUrl={ apod[0]?.hdurl ?? apod[0]?.thumbnail_url ?? apod[0]?.url }
+            <Hero heroImgUrl={ todaysApodImg.current }
                 dateRange={dateRange} 
-                setDateRange={setDateRange}
+                setDateRange={memoizedSetDateRange}
                 isLoading={isLoading}
             />
             <section className="card-container">

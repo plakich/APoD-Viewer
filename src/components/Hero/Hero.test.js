@@ -175,12 +175,10 @@ describe("Hero", () =>
             jest.spyOn(useToggle, "default")
                 .mockImplementationOnce( () => [isToggled, jest.fn()] );
                 
-            
-            const isHeroSet = false; 
+
             const isScrolled = true;  
             
             jest.spyOn(React, "useState")
-                .mockImplementationOnce( () => [isHeroSet, jest.fn()] )
                 .mockImplementationOnce( () => [isScrolled, jest.fn()] );
             
         });
@@ -264,11 +262,9 @@ describe("Hero", () =>
                 .mockImplementationOnce( () => [isToggled, jest.fn()] );
                 
             
-            const isHeroSet = false; 
             const isScrolled = true;  
             
             jest.spyOn(React, "useState")
-                .mockImplementationOnce( () => [isHeroSet, jest.fn()] )
                 .mockImplementationOnce( () => [isScrolled, jest.fn()] );
                 
             render(
@@ -307,11 +303,9 @@ describe("Hero", () =>
                 .mockImplementationOnce( () => [isToggled, jest.fn()] ); // mobile menu opened/toggled
                 
             
-            const isHeroSet = false; 
             const isScrolled = true;  
             
             jest.spyOn(React, "useState")
-                .mockImplementationOnce( () => [isHeroSet, jest.fn()] )
                 .mockImplementationOnce( () => [isScrolled, jest.fn()] );
                 
             render(

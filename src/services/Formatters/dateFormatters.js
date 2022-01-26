@@ -298,19 +298,20 @@ export const dropErrorChars = (date = "", errorArray = "") =>
     
     @returns {Object} dateObj - obj of strings representing new dateRange,
     always <= 30 days, with currentStart and currentEnd properties
-    signifying dateRange between startDate and endDate. 
+    signifying dateRange between startDate and endDate, inclusive. 
     Returns null if dateRange cannot be modified anymore (i.e.,
     when currentStart === startDate)
 */
 export const modifyDateRange = (dateRange) =>
 {
-    // Subtract 30 days from current dateRange. 
-    // This is so we fetch only 30 apods/days at a time.
+    // Subtract 29 days from current dateRange. 
+    // This is so we fetch only 30 apods/days at a time
+    // (day we modify from, +/- 29 = 30 days).
     // NASA's APOD api can't handle a request much larger
     // than this without timing out.
     // Could've also made this an argument to the fn
-    // if we didn't always want a set amount. 
-    const apodFetchMax = 30; 
+    // if our app didn't always need this set amount. 
+    const apodFetchMax = 29; 
 
     // Convert Strings to Dates because we need to perform subtraction
     // on our dates.

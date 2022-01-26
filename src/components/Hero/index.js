@@ -1,13 +1,11 @@
 import { ReactComponent as Logo } from '../../APoDLogo.svg';
-import {useState, useEffect, useRef} from "react"; 
+import {useState, useEffect, useRef, memo} from "react"; 
 import DatePicker from "../DatePicker";
 import useMediaQuery from "../../hooks/useMediaQuery"; 
 import useToggle from "../../hooks/useToggle";
 
 const Hero = ({dateRange, setDateRange, heroImgUrl, isLoading}) =>
 {
-    
-    const [isHeroSet, setIsHeroSet] = useState(heroImgUrl); // for setting hero background to be today's APOD img
     const [isScrolled, setIsScrolled] = useState(false); // so we know when to display a fixed header/menu when scrolled past hero
     const hero = useRef(null); 
     
@@ -17,18 +15,14 @@ const Hero = ({dateRange, setDateRange, heroImgUrl, isLoading}) =>
     // set hero background to be today's apod image
     useEffect(() =>
     {
-        if ( !isHeroSet && typeof heroImgUrl !== "undefined" ) 
+        if (heroImgUrl)
         {
-            // need to get backgroundImg first because there's an already applied gradient in 
-            // css to slightly darken img so white text shows up better
             let heroBackgroundImg = getComputedStyle(hero.current).backgroundImage;
             
             hero.current.style.backgroundImage = `${heroBackgroundImg}, url("${heroImgUrl}")`;
-            
-            setIsHeroSet(true);
         }
         
-    }, [heroImgUrl, isHeroSet]);
+    }, [heroImgUrl]);
     
     useEffect(() =>
     {
@@ -106,4 +100,9 @@ const Hero = ({dateRange, setDateRange, heroImgUrl, isLoading}) =>
     );
 };
 
-export default Hero;
+// If we look at the props Hero takes, 
+// and if we look at when App rerenders (Hero's parent),
+// we'll notice that almost all the state
+// of App updates together. Only on isolated
+// isScrolled state changes will another Hero render be prevented. 
+export default memo(Hero);

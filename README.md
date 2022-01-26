@@ -1,70 +1,60 @@
-# Getting Started with Create React App
+# APoD Viewer
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+NASA's [Astronomy Picture of the Day](https://apod.nasa.gov/apod/) combines high 
+quality space photography with scientific explanations for each photo. It's an excellent
+resource for learning--and a great way to discover new wallpapers. 
 
-## Available Scripts
+However, the NASA site is a bit antiquated by today's standards: its design is
+stuck two or three decades in the past, and most importantly, it's impossible to view 
+APoDs for more than one day (without resorting to viewing each on its own page). This 
+makes for a frustrating user experience. 
 
-In the project directory, you can run:
+The APoD Viewer app solves these problems by implementing a modern design (mobile friendly)
+and by displaying multiple APoDs via small cards that a user specifies (by entering a date range).
 
-### `npm start`
+Visit the site at apod-viewer.com
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+## Installation and tests
 
-The page will reload if you make edits.\
-You will also see any lint errors in the console.
+Before proceeding, make sure to first install the backend server (following the installation directions
+from that project) and start that server on localhost port 8081. Note, the client is hard-coded
+to proxy all api requests to the backend server running on port 8081, so make sure that port is
+available. 
 
-### `npm test`
+To run the tests, either clone the repo or download and unzip the project, making sure to rename the folder
+to APoD-Viewer. Then run 'npm install' from the main directory to download the necessary 
+dependecies. 
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+Next, run 'npm start' in the main directory to start the client, making sure to run it on
+port 8080. 
 
-### `npm run build`
+Once both the client and server are running, you can run the end-to-end tests via cypress by 
+entering 'npm run e2e-test' inside the project directory and selecting apod_viewer.spec.js inside
+the newly opened window. 'npm test' runs the unit and integration test suites 
+(after the initial run, press a to run all tests).
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+### A quick note on failing tests (false negatives)
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+Sometimes Cypress end-to-end tests will report false negatives. For example, the tests
+may fail with messages about cy.wait timing out (by default, Cypress waits 5000ms before
+timing out). This isn't a problem with the app but a problem with the NASA APoD api, which
+can be flaky at times.
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+Most often, simply running the tests again will cause them to pass. If the tests keep failing
+though, try visiting [the APoD api demo endpoint](https://api.nasa.gov/planetary/apod?api_key=DEMO_KEY)
+to see if NASA's api is running (it'll return json if so). 
 
-### `npm run eject`
+There have been times in the past where the api has been down for several hours to a day, so you
+may just have to try again at a later date if it's down. 
 
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
+Finally, the integration and unit tests will always pass. The errors you may see are console.error
+messages I left for debugging purposes (errors are purposely thrown in the tests).
 
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+### A quick note about site errors 
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
+If the site doesn't automatically load today's APoD image and is displaying an error message
+in the card section, then it's for the same reason as outlined above for failing tests. If the
+NASA api is unavailable, the app will not be able to function properly. As mentioned above, verify the
+NASA api is working. If it's not, you will have to wait until it's back up for the app
+to work properly. 
 
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
