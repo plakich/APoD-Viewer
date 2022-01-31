@@ -95,7 +95,7 @@ describe("APoD Viewer", () =>
                 .and("be.visible"); 
 
             // check that all 30 cards have the correct dates
-            cy.get(".card").each((card, i, cardList) =>
+            cy.get(".card").each((card, i) =>
             {
                 cy.wrap(card)
                     .find("h2 > time")
@@ -136,7 +136,7 @@ describe("APoD Viewer", () =>
                 .and("be.visible"); 
 
             // check that all 30 cards have the correct dates
-            cy.get(".card").each((card, i, cardList) =>
+            cy.get(".card").each((card, i) =>
             {
                 cy.wrap(card)
                     .find("h2 > time")
@@ -215,6 +215,129 @@ describe("APoD Viewer", () =>
 
     });
 
+    describe("mobile view collasping card descriptions", () =>
+    {
+        beforeEach(() => 
+        {
+            // Anything below 780 only displays one card
+            // with a collasped description. 
+            cy.viewport(779, 500); 
+
+        });
+
+        it("has cards with collasped descriptions and arrows to show descriptions", () =>
+        {
+
+            // We don't need another api call here, but
+            // the tests will be slower if we're still 
+            // running all this on the 61 cards left from
+            // the last test. 
+            cy.intercept("POST", "/api").as("api");
+
+            cy.get("form").within(() => 
+            {
+                // get just 10 days of apods 
+                cy.get("input[name='fromDate']").clear().type("2021/10/21");
+                cy.get("input[name='toDate']").clear().type("2021/10/30");
+    
+                cy.root().submit();
+            });
+
+            cy.wait("@api").then((interception) => 
+            {
+                assert.isNotNull(interception.response.body, "4th API call has data");
+
+                // not needed, but this is
+                // the only way you'll see the
+                // cards if watching the testing 
+                // window.
+                cy.scrollTo("bottom"); 
+
+                // check that all 10 cards have arrow and 
+                // correct accessible attributes and values.
+                cy.get(".card").each((card) =>
+                {
+                    cy.wrap(card)
+                        .find(".card__btn")
+                        .should("be.visible")
+                        .should("not.have.class", "show-desc")
+                        .should("have.attr", "aria-expanded")
+                        .and("equal", "false");
+                    
+                    cy.wrap(card)
+                        .find(".card__desc")
+                        .should("not.have.class", "show-desc")
+                        .and("not.be.visible"); 
+                });
+                
+            }); 
+            
+        });
+
+        it("removes/adds arrow to expand description on change between desktop/mobile view", () =>
+        {
+            cy.viewport(780, 500); // desktop starts at 780px
+
+            // check cards have removed arrow on desktop view
+            cy.get(".card").each((card) =>
+            {
+                cy.wrap(card)
+                    .find(".card__btn")
+                    .should("not.exist");
+                
+                // show-desc is mobile only with
+                // mobile specific styles. Card desc
+                // still show on desktop.
+                cy.wrap(card)
+                    .find(".card__desc")
+                    .should("not.have.class", "show-desc") 
+                    .and("be.visible"); 
+            });
+
+
+           cy.viewport(779, 500); // change back to mobile view
+
+           // check that all 10 cards have arrow and 
+           // and values (aria-expanded, show-desc) were
+           // reset.
+            cy.get(".card").each((card) =>
+            {
+                cy.wrap(card)
+                    .find(".card__btn")
+                    .should("be.visible")
+                    .should("not.have.class", "show-desc")
+                    .should("have.attr", "aria-expanded")
+                    .and("equal", "false");
+                
+                cy.wrap(card)
+                    .find(".card__desc")
+                    .should("not.have.class", "show-desc")
+                    .and("not.be.visible"); 
+            });
+        });
+
+        it("shows description for apod after clicking button to expand description", () =>
+        {
+            cy.get(".card__btn").each((cardBtn) =>
+            {
+                cy.wrap(cardBtn)
+                    .click()
+                    // use should with callback so
+                    // we don't change subject 
+                    // yielded.
+                    .should((cardBtn) =>
+                    {
+                        expect(cardBtn)
+                            .to.have.attr("aria-expanded", "true"); 
+                    })
+                    .parentsUntil(".card-container")
+                    .find(".card__desc")
+                    .should("be.visible"); 
+            });
+               
+        });
+    });
+
     describe("fixed-header", () => 
     {
         context("desktop/tablet view", () => 
@@ -234,10 +357,11 @@ describe("APoD Viewer", () =>
                 cy.scrollTo("bottom");
             });
       
-            it("displays fixed-header without mobile menu toggle", () => 
+            it("displays fixed-header without a toggle btn for mobile menu", () => 
             {
                 // display datepicker form itself on desktop view
                 cy.get(".header-fixed > .form-container").should("be.visible");
+                // but don't display hamburger toggle
                 cy.get(".header-fixed > .hamburger-toggle").should("not.exist");
             });
 
@@ -249,8 +373,8 @@ describe("APoD Viewer", () =>
                 cy.get(".header-fixed form").within(() => 
                 {
                     
-                    // get 30 days worth of APoDs
-                    cy.get("input[name='fromDate']").clear().type("2021/9/01");
+                    // get 10 days worth of APoDs to check form on header works
+                    cy.get("input[name='fromDate']").clear().type("2021/09/21");
                     cy.get("input[name='toDate']").clear().type("2021/09/30");
         
                     cy.root().submit();
@@ -258,7 +382,7 @@ describe("APoD Viewer", () =>
 
                 cy.wait("@api").then((interception) => 
                 {
-                    assert.isNotNull(interception.response.body, "API call has data");
+                    assert.isNotNull(interception.response.body, "5th API call has data");
 
                     // not needed, but this is
                     // the only way you'll see the
@@ -267,7 +391,7 @@ describe("APoD Viewer", () =>
                     cy.scrollTo("bottom"); 
     
                     cy.get(".card")
-                        .should("have.length", 30)
+                        .should("have.length", 10)
                         .and("be.visible"); 
         
                 });
@@ -309,26 +433,26 @@ describe("APoD Viewer", () =>
                 cy.get(".header-fixed > .mobile-menu form").within(() => 
                 {
                     
-                    // get 30 days worth of APoDs
-                    cy.get("input[name='fromDate']").clear().type("2021/08/01");
-                    cy.get("input[name='toDate']").clear().type("2021/08/30");
+                    // get 10 days worth of APoDs
+                    cy.get("input[name='fromDate']").clear().type("2021/08/11");
+                    cy.get("input[name='toDate']").clear().type("2021/08/20");
         
                     cy.root().submit();
                 });
 
                 cy.wait("@api").then((interception) => 
                 {
-                    assert.isNotNull(interception.response.body, "API call has data");
+                    assert.isNotNull(interception.response.body, "6th API call has data");
 
                     cy.scrollTo("bottom"); 
     
                     cy.get(".card")
-                        .should("have.length", 30)
+                        .should("have.length", 10)
                         .and("be.visible"); 
         
                 });
             });
-        })
-      })
+        });
+      });
 
 });

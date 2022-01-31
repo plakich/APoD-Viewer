@@ -58,7 +58,7 @@ function App()
             method: "POST", 
             headers: {"Content-Type": "application/json"},
             body: JSON.stringify({startDate: todaysDate, endDate: todaysDate})
-        }, 95); //fetch more data when body is 95 percent scrolled
+        }, 95); // fetch more data when body is 95 percent scrolled
 
     const isFirstRender = useIsFirstRender(); 
     const modifiedDateRange = useRef(
@@ -68,9 +68,7 @@ function App()
             
         }); // Ref needed so we can modify dateRange between renders without rerendering
     
-    // On dateRange change (i.e., user submits new date),
-    // use modifiedDateRange ref to save modified dateRange
-    // between renders. Then use new modified dateRange to
+    // On dateRange change, use new modified dateRange to
     // make call for more apod data. 
     useEffect(() =>
     {
@@ -118,16 +116,22 @@ function App()
     // would be same as for last time this was called).
     useEffect(() =>
     {
-        // Our first api call is always for today's date.
-        // This ensures we only set this once, for the
-        // first data that comes back. 
-        todaysApodImg.current = todaysApodImg.current ??
-            data[0]?.hdurl ?? data[0]?.thumbnail_url ?? data[0]?.url;
-
         modifiedDateRange.current.currentStart = data[0]?.date.replace(/-/g, "/");
         modifiedDateRange.current.currentEnd = data[data.length - 1]?.date.replace(/-/g, "/"); 
         
         data.reverse(); // because we display dates in descending order. 
+
+        // Our first api call is always for today's date.
+        // This ensures we only set this once, for the
+        // first data that comes back. Important this
+        // is after reverse in case the req for today's
+        // date fails and the user enters a new date range
+        // without reloading first, in which case we still
+        // want to display the first card of that, even though
+        // it might not be today's date anymore. 
+        todaysApodImg.current = todaysApodImg.current ??
+            data[0]?.hdurl ?? data[0]?.thumbnail_url ?? data[0]?.url;
+
         setApod(prev => [...prev, ...data]); 
         
     }, [data]); // when fetch receives data back from server
