@@ -20,10 +20,6 @@ code {
     monospace;
 }
 
-.App {
-  
-}
-
 .hero {
   background: #000;
   background-image: linear-gradient(#00000099, #00000099);
@@ -246,6 +242,8 @@ label > .label-small {
   background-color: rgba(255,255,255,0.8);
   transition: all 0.6s ease-out;
   font-weight: bold;
+  padding-left: 0.3em;
+  letter-spacing: 0.02em;
 }
 
 .date-picker.date-error {
@@ -378,7 +376,7 @@ label > .label-small {
     padding-left: 2em;
   }
 
-}
+} /* end media */
 
 .card-container {
   display: grid; 
@@ -399,12 +397,18 @@ label > .label-small {
 .card {
   position: relative;
   overflow: hidden;
-  margin: 6em auto 2em;
+  margin: 2em auto 2em;
   box-shadow: 0 0 1.375em rgb(0 0 0 / 20%);
   border-radius: 0.3125em;
-  width: 17.8125em;
-  height: 31.25em;
+  width: 85vw;
   background-color: rgb(248, 248, 248);
+}
+
+@media (min-width: 35rem)
+{
+  .card {
+    width: 65vw; 
+  }
 }
 
 .card-loader {
@@ -450,9 +454,15 @@ label > .label-small {
 
 .card__img {
   max-width: 100%;
-  height: 9.375em;
-  width: 17.8125em; 
   object-fit: cover; 
+  vertical-align: middle;
+}
+
+.card__video {
+    margin: 0 auto;
+    display: block;
+    width: 100%;
+    height: 15em; 
 }
 
 .card__img__hi-res-link {
@@ -473,12 +483,7 @@ label > .label-small {
 }
 
 .card__title {
-  max-height: 3.125em;
   font-size: 1.25em;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  transition: max-height 0.6s ease-out;
   padding: 1em 1em 0 0;
   margin-left: 1.25em;
 }
@@ -493,14 +498,46 @@ label > .label-small {
   font-size: 1em;
 }
 
+.card__btn__cntr {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-end;
+  padding: 0.3em;
+}
+
+.card__btn {
+  border: none;
+  background-color: rgb(248,248,248);
+  border-radius: 50%;
+  transition: background-color 0.25s ease-out; 
+  transition: transform 150ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.card__btn.show-desc {
+  transform: rotate(180deg);
+}
+
+.card__btn:hover {
+  background-color: rgba(0, 0, 0, 0.04);
+  cursor: pointer;
+}
+
 .card__desc {
   overflow: auto;
-  height: 11.875em;
-  padding: 1.5em;
+  transition: max-height 0.5s ease-out; 
+  max-height: 0;
   text-align: left; 
   line-height: 1.6;
   font-size: 0.95em;
   word-break: break-word;
+  margin: 0;
+  padding: 0 1.5em; 
+  overflow: visible; 
+}
+
+.card__desc.show-desc {
+  max-height: 90em;
+  margin-block-end: 2em;
 }
 
 /*
@@ -522,7 +559,7 @@ for hiding content visually but keeping for screen readers
   width: 1px;
 }
 
-@media (min-width: 50rem)
+@media (min-width: 48.75rem)
 {
   .card-container {
     grid-template-columns: repeat(2, 1fr); 
@@ -530,7 +567,37 @@ for hiding content visually but keeping for screen readers
   
   .card {
     font-size: calc(16px + (0.4vw - (50rem * (0.4 / 100))));
+    height: 31.25em;
+    width: 17.8125em;
+    margin: 6em auto 2em;
   }
+
+  .card__title {
+    max-height: 3.125em;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    transition: max-height 0.6s ease-out;
+  }
+
+  .card__img {
+    height: 9.375em;
+    width: 17.8125em; 
+  }
+
+  .card__desc {
+    overflow: auto;
+    max-height: initial;
+    height: 11.875em;
+    padding: 1.5em;
+    text-align: left; 
+    line-height: 1.6;
+    font-size: 0.95em;
+    word-break: break-word;
+    margin-block-start: 1em;
+    margin-block-end: 1em;
+  }
+
 }
 
 @media (min-width: 80rem)
